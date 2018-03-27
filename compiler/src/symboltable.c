@@ -6,8 +6,6 @@
 #include "diag.h"
 #include "logger.h"
 
-
-
 variable_t *tmpParameters = NULL;
 
 void init()

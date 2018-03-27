@@ -1,10 +1,7 @@
 # Ignore everything
-*
+/*
+/*/
 
 # But not these files...
 !.gitignore
-!/compiler/src
-# etc...
-
-# ...even if they are in subdirectories
-!*/
+!/compiler/src/

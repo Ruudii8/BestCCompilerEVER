@@ -75,36 +75,49 @@ void printAll(int line, int col)
 {
     // print symbol tables
 
-    printf("\nSymbol tables:");
+    printf("\n################################### Symbol tables ####################################");
     
-    printf("\nVariables:\n");
+    printf("\nVariables:");
+
 
     scope_t *scope, *tmpScope;
     HASH_ITER(hh, symboltable.scopes, scope, tmpScope)
     {
+        printf("\nScope: %d\n", scope->id);
+        printf("-------------------------------------------\n");
+        printf("| Name       | Type  | Size   | Offset    |\n");
+        printf("|-----------------------------------------|\n");
 
         variable_t *variable, *tmpVar;
         HASH_ITER(hh, scope->variables, variable, tmpVar)
         {
-            printf("Scope %d: %s %s\n", scope->id, returnTypeString(variable->type), variable->name);
+            printf("|%12s|%7s|%8d|           |\n", variable->name, returnTypeString(variable->type), variable->size);
         }
 
+        printf("-------------------------------------------\n");
     }
 
+
+
     printf("\nFunctions:\n");
+
+    printf("--------------------------------------------------------------------------------------\n");
+    printf("| Name       | Returntype | ParamCount | Parameters                      | Reference |\n");
+    printf("|------------------------------------------------------------------------------------|\n");
 
 
     function_t *function, *tmpFunc;
     HASH_ITER(hh, symboltable.functions, function, tmpFunc)
     {
-        printf("%s %s(", returnTypeString(function->returnType), function->name);
+        printf("|%12s|%12s|%12d|", function->name, returnTypeString(function->returnType), function->parameterCount);
+
         variable_t *parameter, *tmpPar;
         if(function->parameters!=NULL){
             HASH_ITER(hh, function->parameters, parameter, tmpPar)
             {
                 if(tmpPar==NULL)
                 {
-                    printf("%s %s)\n",returnTypeString(parameter->type), parameter->name);
+                    printf("%s %s\n",returnTypeString(parameter->type), parameter->name);
                 }
                 else
                 {
@@ -114,12 +127,14 @@ void printAll(int line, int col)
         }
         else
         {
-            printf(")\n");
+            printf("\n");
         }
     }
 
+    printf("--------------------------------------------------------------------------------------\n");
 
-    log.info(line,col,"finished");
+
+    printf("\n################################### Symbol tables ####################################\n");
 
 }
 

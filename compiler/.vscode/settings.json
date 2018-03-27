@@ -1,0 +1,4 @@
+{
+    // The directory where CMake build files will go
+    "cmake.buildDirectory": "${workspaceRoot}/bin"
+}

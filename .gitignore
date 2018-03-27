@@ -3,8 +3,7 @@
 
 # But not these files...
 !.gitignore
-!compiler/source
-!template.latex
+!compiler/rc
 # etc...
 
 # ...even if they are in subdirectories

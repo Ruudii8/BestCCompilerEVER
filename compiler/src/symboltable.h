@@ -4,6 +4,15 @@
 
 #define TYPE_VOID 0
 #define TYPE_INT 1
+#define TYPE_INTARRAY 2
+
+
+typedef struct
+{
+    char *name;
+    int size;
+
+} id_def_t;
 
 
 typedef struct 
@@ -14,7 +23,7 @@ typedef struct
     int order;              //only used for parameters
     UT_hash_handle hh;
 
-}variable_t;
+} variable_t;
 
 
 typedef struct 
@@ -56,9 +65,9 @@ int tmpParameterCount;
 
 extern void init(void);
 extern void printAll(int line, int col);
-extern void addVariable(int line, int col, char *name, int type);
+extern void addVariable(int line, int col, id_def_t id_def, int type);
 extern void declareFunction(int line, int col, char *name, int returnType, variable_t *parameters);
 extern void defineFunction(int line, int col, char *name, int returnType, variable_t *parameters);
 extern void endFunctionScope(int line, int col);
-extern void addParameter(int line, int col, char *name, int type);
+extern void addParameter(int line, int col, id_def_t id_def, int type);
 extern variable_t* returnParameters(void);

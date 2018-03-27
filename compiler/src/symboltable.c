@@ -7,9 +7,6 @@
 #include "logger.h"
 
 
-
-
-
 variable_t *tmpParameters = NULL;
 
 void init()
@@ -37,13 +34,17 @@ char* returnTypeString(int type)
     {
         return "int";
     }
-    else
+    else if(type==0)
     {
         return "void";
     }
+    else
+    {
+        return "int[]";
+    }
 }
 
-char* parametersToString(variable_t *parameters)
+/*char* parametersToString(variable_t *parameters)
 {
     char *parameterString = "";
 
@@ -69,7 +70,7 @@ char* parametersToString(variable_t *parameters)
 
     return parameterString;
 
-}
+}*/
 
 void printAll(int line, int col)
 {
@@ -139,7 +140,7 @@ void printAll(int line, int col)
 }
 
 
-void addVariable(int line, int col, char *name, int type)
+void addVariable(int line, int col, id_def_t id_def, int type)
 {
     //check if type is void
 
@@ -152,20 +153,20 @@ void addVariable(int line, int col, char *name, int type)
     //check if variable with same name already exists
 
     variable_t *variable;
-    HASH_FIND_STR(symboltable.currentScope->variables, name, variable);
+    HASH_FIND_STR(symboltable.currentScope->variables, id_def.name, variable);
     if(variable!=NULL)
     {
-        log.error(line, col, "Variable with name %s already exists", name);
+        log.error(line, col, "Variable with name %s already exists", id_def.name);
         return;
     }
 
     //check if function with same name already exists
 
     function_t *function;
-    HASH_FIND_STR(symboltable.functions, name, function);
+    HASH_FIND_STR(symboltable.functions, id_def.name, function);
     if(function!=NULL)
     {
-        log.error(line, col, "Name %s is already used for a function", name);
+        log.error(line, col, "Name %s is already used for a function", id_def.name);
         return;
     }
 
@@ -173,9 +174,17 @@ void addVariable(int line, int col, char *name, int type)
 
     variable = (variable_t*)malloc(sizeof(variable_t));
 
-    variable->name = name;
-    variable->type = type;
-    variable->size = 4;             //calculate size?
+    variable->name = id_def.name;
+    if(id_def.size==-1)
+    {
+        variable->size = 4;
+        variable->type = type;
+    }
+    else{
+        variable->size = id_def.size*4;
+        variable->type = TYPE_INTARRAY;
+    }
+
 
     HASH_ADD_STR(symboltable.currentScope->variables, name, variable);
 
@@ -183,40 +192,16 @@ void addVariable(int line, int col, char *name, int type)
 
 int compareParams(variable_t *p1, variable_t *p2)
 {
-    //TODO: order?
-    variable_t *parameters;
 
-    for (p1 = parameters; p1 != NULL; p1 = p1->hh.next, p2 = p2->hh.next)
+    /*for (p1; p1 != NULL; p1 = p1->hh.next, p2 = p2->hh.next)
     {
         if (p2 == NULL || p1->type != p2->type || p1->name != p2->name)
         {
             return 1;
         }
-    }
-
-    return 0;
-
-
-    /*while(!(parameters1==NULL && parameters2==NULL))
-    {
-        if(parameters1==NULL || parameters2==NULL)
-        {
-            //different count of parameters
-            return 1;
-        }
-
-        if(parameters1->name != parameters2->name || parameters1->type != parameters2->type)
-        {
-            //parameters do not match
-            return 1;
-        }
-
-        parameters1 = parameters1->hh.next;
-        parameters2 = parameters2->hh.next;
     }*/
 
-    //parameter lists are the same
-
+    return 0;
 
 }
 
@@ -347,15 +332,15 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
 }
 
 
-void addParameter(int line, int col, char *name, int type)
+void addParameter(int line, int col, id_def_t id_def, int type)
 {
     //check if variable with same name already exists
 
     variable_t *parameter;
-    HASH_FIND_STR(tmpParameters, name, parameter);
+    HASH_FIND_STR(tmpParameters, id_def.name, parameter);
     if(parameter!=NULL)
     {
-        log.error(line, col, "Parameter with name %s already exists", name);
+        log.error(line, col, "Parameter with name %s already exists", id_def.name);
         return;
     }
 
@@ -363,10 +348,20 @@ void addParameter(int line, int col, char *name, int type)
 
     parameter = (variable_t*)malloc(sizeof(variable_t));
 
-    parameter->name = name;
-    parameter->type = type;
-    parameter->size = 4;
+    parameter->name = id_def.name;
+
+    if(id_def.size==-1)
+    {
+        parameter->size = 4;
+        parameter->type = type;
+    }
+    else{
+        parameter->size = id_def.size*4;
+        parameter->type = TYPE_INTARRAY;
+    }
+
     parameter->order = tmpParameterCount;
+    tmpParameterCount++;
 
     HASH_ADD_STR(tmpParameters, name, parameter);
 

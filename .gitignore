@@ -1,5 +1,4 @@
 # Ignore everything
-/*
-!/compiler
-/compiler/*
-!/compiler/src
+
+/compiler/bin
+.vscode/

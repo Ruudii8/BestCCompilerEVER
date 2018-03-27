@@ -3,7 +3,7 @@
 
 # But not these files...
 !.gitignore
-!compiler/rc
+!compiler/src
 # etc...
 
 # ...even if they are in subdirectories

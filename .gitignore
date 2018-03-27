@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!compiler/source
+!template.latex
+# etc...
+
+# ...even if they are in subdirectories
+!*/

@@ -1,4 +1,0 @@
-/home/vagrant/svnCompiler/bin/CMakeFiles/rebuild_cache.dir
-/home/vagrant/svnCompiler/bin/CMakeFiles/edit_cache.dir
-/home/vagrant/svnCompiler/bin/CMakeFiles/dhbwcc.dir
-/home/vagrant/svnCompiler/bin/CMakeFiles/dhbwdoc.dir

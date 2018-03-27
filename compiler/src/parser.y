@@ -2,17 +2,21 @@
  * parser.y - Parser utility for the DHBW compiler
  */
  
-%{	
+%code requires {	
 	// Project-specific includes
   #include "uthash.h"
   #include "diag.h"
   #include "symboltable.h"
 
-%}
+  void yyerror (const char*);
+  extern int yylex(void);
+
+}
 
 %union {
   int i;
   char *id;
+  id_def_t id_def;
   int type;
 }
  
@@ -65,7 +69,7 @@
 %token LOGICAL_NOT UNARY_MINUS UNARY_PLUS
 
 %type <type> type
-%type <id> identifier_declaration
+%type <id_def> identifier_declaration
 %type <type> variable_declaration
 
 %right ASSIGN
@@ -111,8 +115,8 @@ variable_declaration
      ;
 
 identifier_declaration
-     : ID BRACKET_OPEN NUM BRACKET_CLOSE {$$ = $1;}
-     | ID {$$ = $1;}
+     : ID BRACKET_OPEN NUM BRACKET_CLOSE {$$ = (id_def_t){ $1, $3 };}
+     | ID {$$ = (id_def_t){ $1, -1 };}
      ;
 
 function_definition

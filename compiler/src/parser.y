@@ -16,7 +16,7 @@
 %union {
   int i;
   char *id;
-  id_def_t id_def;
+  var_tmp_t tmp;
   int type;
 }
  
@@ -69,7 +69,7 @@
 %token LOGICAL_NOT UNARY_MINUS UNARY_PLUS
 
 %type <type> type
-%type <id_def> identifier_declaration
+%type <tmp> identifier_declaration
 %type <type> variable_declaration
 
 %right ASSIGN
@@ -115,8 +115,8 @@ variable_declaration
      ;
 
 identifier_declaration
-     : ID BRACKET_OPEN NUM BRACKET_CLOSE {$$ = (id_def_t){ $1, $3 };}
-     | ID {$$ = (id_def_t){ $1, -1 };}
+     : ID BRACKET_OPEN NUM BRACKET_CLOSE {$$ = (var_tmp_t){ $1, $3 };}
+     | ID {$$ = (var_tmp_t){ $1, -1 };}
      ;
 
 function_definition

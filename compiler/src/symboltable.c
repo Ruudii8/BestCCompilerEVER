@@ -34,94 +34,97 @@ char* returnTypeString(int type)
     {
         return "int";
     }
+    else if(type==0)
+    {
+        return "void";
+    }
     else
     {
-        return "void";
+        return "int[]";
     }
 }
 
-char* parametersToString(variable_t *parameters)
-{
-    char *parameterString = "";
-
-    if(parameters == NULL)
-    {
-        return "void";
-    }
-
-    variable_t *parameter, *tmpPar;
-    HASH_ITER(hh, parameters, parameter, tmpPar)
-    {
-        strcat(parameterString, returnTypeString(parameter->type));
-        strcat(parameterString, " ");
-        strcat(parameterString, parameter->name);
-        strcat(parameterString, ",");
-
-    }
-
-    parameterString[strlen(parameterString)-1] = '\0';
-
-
-    //TODO
-
-    return parameterString;
-
-}
 
 void printAll(int line, int col)
 {
     // print symbol tables
 
-    printf("\nSymbol tables:");
+    printf("\n################################### Symbol tables ####################################");
     
-    printf("\nVariables:\n");
+    printf("\nVariables:");
+
 
     scope_t *scope, *tmpScope;
     HASH_ITER(hh, symboltable.scopes, scope, tmpScope)
     {
+        printf("\nScope: %d\n", scope->id);
+        printf("-------------------------------------------\n");
+        printf("| Name       | Type  | Size   | Offset    |\n");
+        printf("|-----------------------------------------|\n");
 
         variable_t *variable, *tmpVar;
         HASH_ITER(hh, scope->variables, variable, tmpVar)
         {
-            printf("Scope %d: %s %s\n", scope->id, returnTypeString(variable->type), variable->name);
+            printf("|%12s|%7s|%8d|           |\n", variable->name, returnTypeString(variable->type), variable->size);
         }
 
+        printf("-------------------------------------------\n");
     }
 
+
+
     printf("\nFunctions:\n");
+
+    printf("--------------------------------------------------------------------------------------\n");
+    printf("| Name       | Returntype | ParamCount | Reference  | Parameters                     |\n");
+    printf("|------------------------------------------------------------------------------------|\n");
 
 
     function_t *function, *tmpFunc;
     HASH_ITER(hh, symboltable.functions, function, tmpFunc)
     {
-        printf("%s %s(", returnTypeString(function->returnType), function->name);
+        printf("|%12s|%12s|%12d|            | ", function->name, returnTypeString(function->returnType), function->parameterCount);
+
         variable_t *parameter, *tmpPar;
         if(function->parameters!=NULL){
             HASH_ITER(hh, function->parameters, parameter, tmpPar)
             {
-                if(tmpPar==NULL)
+                if(parameter->type == 2)
                 {
-                    printf("%s %s)\n",returnTypeString(parameter->type), parameter->name);
+                    printf("int %s[%d]", parameter->name, parameter->size/4);
                 }
                 else
                 {
-                    printf("%s %s, ",returnTypeString(parameter->type), parameter->name);
+                    printf("%s %s", returnTypeString(parameter->type), parameter->name);
+                }
+
+
+                if(tmpPar==NULL)
+                {
+                    printf("\n");
+                }
+                else
+                {
+                    printf(", ");
+                    
                 }
             }
         }
         else
         {
-            printf(")\n");
+            printf("\n");
         }
     }
 
+    printf("--------------------------------------------------------------------------------------\n");
 
-    log.info(line,col,"finished");
+
+    printf("\n################################### Symbol tables ####################################\n");
 
 }
 
 
-void addVariable(int line, int col, char *name, int type)
+void addVariable(int line, int col, var_tmp_t tmp, int type)
 {
     //check if type is void
 
@@ -134,20 +137,20 @@ void addVariable(int line, int col, char *name, int type)
     //check if variable with same name already exists
 
     variable_t *variable;
-    HASH_FIND_STR(symboltable.currentScope->variables, name, variable);
+    HASH_FIND_STR(symboltable.currentScope->variables, tmp.name, variable);
     if(variable!=NULL)
     {
-        log.error(line, col, "Variable with name %s already exists", name);
+        log.error(line, col, "Variable with name %s already exists", tmp.name);
         return;
     }
 
     //check if function with same name already exists
 
     function_t *function;
-    HASH_FIND_STR(symboltable.functions, name, function);
+    HASH_FIND_STR(symboltable.functions, tmp.name, function);
     if(function!=NULL)
     {
-        log.error(line, col, "Name %s is already used for a function", name);
+        log.error(line, col, "Name %s is already used for a function", tmp.name);
         return;
     }
 
@@ -155,9 +158,17 @@ void addVariable(int line, int col, char *name, int type)
 
     variable = (variable_t*)malloc(sizeof(variable_t));
 
-    variable->name = name;
-    variable->type = type;
-    variable->size = 4;             //calculate size?
+    variable->name = tmp.name;
+    if(tmp.size==-1)
+    {
+        variable->size = 4;
+        variable->type = type;
+    }
+    else{
+        variable->size = tmp.size*4;
+        variable->type = TYPE_INTARRAY;
+    }
+
 
     HASH_ADD_STR(symboltable.currentScope->variables, name, variable);
 
@@ -165,41 +176,28 @@ void addVariable(int line, int col, char *name, int type)
 
 int compareParams(variable_t *p1, variable_t *p2)
 {
-    //TODO: order?
-    variable_t *parameters;
-
-    for (p1 = parameters; p1 != NULL; p1 = p1->hh.next, p2 = p2->hh.next)
+    variable_t *params1, *tmpVar, *params2;
+    HASH_ITER(hh, p1, params1, tmpVar)
     {
-        if (p2 == NULL || p1->type != p2->type || p1->name != p2->name)
+
+        HASH_FIND_STR(p2, params1->name, params2);
+        if(params2 == NULL)
+        {
+            return 1;
+        }
+
+        if(params1->type != params2->type || params1->order != params2->order)
         {
             return 1;
         }
     }
 
-    return 0;
-
-
-    /*while(!(parameters1==NULL && parameters2==NULL))
+    if(params2->hh.next != NULL)
     {
-        if(parameters1==NULL || parameters2==NULL)
-        {
-            //different count of parameters
-            return 1;
-        }
+        return 1;
+    }
 
-        if(parameters1->name != parameters2->name || parameters1->type != parameters2->type)
-        {
-            //parameters do not match
-            return 1;
-        }
-
-        parameters1 = parameters1->hh.next;
-        parameters2 = parameters2->hh.next;
-    }*/
-
-    //parameter lists are the same
-
-
+    return 0;
 }
 
 
@@ -318,8 +316,12 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
     
     scope_t *function_scope = (scope_t*) malloc(sizeof(scope_t));
 
+    variable_t *tmpParams = parameters;
+
+   
+
     function_scope->id = symboltable.scopeCounter;
-    function_scope->variables = function->parameters;
+    function_scope->variables = tmpParams;
 
     symboltable.currentScope = function_scope;
     symboltable.scopeCounter++;
@@ -329,15 +331,15 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
 }
 
 
-void addParameter(int line, int col, char *name, int type)
+void addParameter(int line, int col, var_tmp_t tmp, int type)
 {
     //check if variable with same name already exists
 
     variable_t *parameter;
-    HASH_FIND_STR(tmpParameters, name, parameter);
+    HASH_FIND_STR(tmpParameters, tmp.name, parameter);
     if(parameter!=NULL)
     {
-        log.error(line, col, "Parameter with name %s already exists", name);
+        log.error(line, col, "Parameter with name %s already exists", tmp.name);
         return;
     }
 
@@ -345,10 +347,20 @@ void addParameter(int line, int col, char *name, int type)
 
     parameter = (variable_t*)malloc(sizeof(variable_t));
 
-    parameter->name = name;
-    parameter->type = type;
-    parameter->size = 4;
+    parameter->name = tmp.name;
+
+    if(tmp.size==-1)
+    {
+        parameter->size = 4;
+        parameter->type = type;
+    }
+    else{
+        parameter->size = tmp.size*4;
+        parameter->type = TYPE_INTARRAY;
+    }
+
     parameter->order = tmpParameterCount;
+    tmpParameterCount++;
 
     HASH_ADD_STR(tmpParameters, name, parameter);
 

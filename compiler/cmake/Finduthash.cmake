@@ -7,6 +7,9 @@
 # Copyright (c) 2011, Dennis Schridde <dennis.schridde@stud.uni-hannover.de>
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
+#
+#
+
 
 set(UTHASH_PREFIX "" CACHE PATH "Prefix uthash was installed into")
 

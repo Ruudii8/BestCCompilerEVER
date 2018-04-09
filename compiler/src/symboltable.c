@@ -5,6 +5,7 @@
 #include "symboltable.h"
 #include "diag.h"
 #include "logger.h"
+#include "typecheck.h"
 
 
 variable_t *tmpParameters = NULL;
@@ -383,3 +384,11 @@ void endFunctionScope(int line, int col)
     symboltable.currentScope = scope;
 }
 
+
+
+void checkAssignment(int line, int col, char *name, char *name1)
+{
+    log.debug(line, col, "name = %s, name1 = %s", name, name1);
+
+
+}

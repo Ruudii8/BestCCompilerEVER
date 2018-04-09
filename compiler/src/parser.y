@@ -7,6 +7,7 @@
   #include "uthash.h"
   #include "diag.h"
   #include "symboltable.h"
+  #include "types.h"
 
   void yyerror (const char*);
   extern int yylex(void);
@@ -16,8 +17,10 @@
 %union {
   int i;
   char *id;
-  var_tmp_t tmp;
   int type;
+  var_tmp_t var_tmp;
+  expression_t exp;
+  funcCallParamList_t paramList;
 }
  
 // Verbose error messages
@@ -69,8 +72,12 @@
 %token LOGICAL_NOT UNARY_MINUS UNARY_PLUS
 
 %type <type> type
-%type <tmp> identifier_declaration
+%type <var_tmp> identifier_declaration
 %type <type> variable_declaration
+%type <exp> expression
+%type <exp> primary
+%type <exp> function_call
+%type <paramList> function_call_parameters
 
 %right ASSIGN
 %left LOGICAL_OR
@@ -187,25 +194,25 @@ expression
      | expression DIV expression
      | MINUS expression %prec UNARY_MINUS
      | PLUS expression %prec UNARY_PLUS
-     | ID BRACKET_OPEN primary BRACKET_CLOSE
-     | PARA_OPEN expression PARA_CLOSE
-     | function_call
-     | primary
+     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_ARR, NULL, $1, NULL, &$3};}
+     | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
+     | function_call {$$ = $1;}
+     | primary {$$ = $1;}
      ;
 
 primary
-     : NUM                            
-     | ID
+     : NUM {$$ = (expression_t){EXP_TYPE_LITERAL, $1, NULL, NULL, NULL};}                     
+     | ID {$$ = (expression_t){EXP_TYPE_VAR, NULL, $1, NULL, NULL};}
      ;
 
 function_call
-      : ID PARA_OPEN PARA_CLOSE
-      | ID PARA_OPEN function_call_parameters PARA_CLOSE
+      : ID PARA_OPEN PARA_CLOSE {$$ = (expression_t){EXP_TYPE_FUNC, NULL, $1, NULL, NULL};}
+      | ID PARA_OPEN function_call_parameters PARA_CLOSE {$$ = (expression_t){EXP_TYPE_FUNC, NULL, $1, NULL, NULL};}
       ;
 
 function_call_parameters
-     : function_call_parameters COMMA expression
-     | expression
+     : function_call_parameters COMMA expression {;}
+     | expression {;}
      ;
 
 %%

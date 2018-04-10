@@ -178,23 +178,23 @@ stmt_loop
 									
 expression
      : expression ASSIGN expression {checkAssignment(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression LOGICAL_OR expression
-     | expression LOGICAL_AND expression
+     | expression LOGICAL_OR expression {logicalOr(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression LOGICAL_AND expression {logicalAnd(@1.first_line, @1.first_column, &$1, &$3);}
      | LOGICAL_NOT expression
-     | expression EQ expression
-     | expression NE expression
-     | expression LS expression 
-     | expression LSEQ expression 
-     | expression GTEQ expression 
-     | expression GT expression
-     | expression PLUS expression
-     | expression MINUS expression
-     | expression SHIFT_LEFT expression
-     | expression SHIFT_RIGHT expression
-     | expression MUL expression
-     | expression DIV expression
-     | MINUS expression %prec UNARY_MINUS
-     | PLUS expression %prec UNARY_PLUS
+     | expression EQ expression {equals(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression NE expression {notEquals(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression LS expression {lesser(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression LSEQ expression {lesserEquals(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression GTEQ expression {greaterEquals(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression GT expression {greater(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression PLUS expression {plus(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression MINUS expression {minus(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression SHIFT_LEFT expression {shiftLeft(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression SHIFT_RIGHT expression {shiftRight(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression MUL expression {multiply(@1.first_line, @1.first_column, &$1, &$3);}
+     | expression DIV expression {divide(@1.first_line, @1.first_column, &$1, &$3);}
+     | MINUS expression %prec UNARY_MINUS {unaryMinus(@1.first_line, @1.first_column, &$2);}
+     | PLUS expression %prec UNARY_PLUS {unaryPlus(@1.first_line, @1.first_column, &$2);}
      | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_VAR, NULL, $1, NULL, &$3};}
      | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
      | function_call {$$ = $1;}

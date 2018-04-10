@@ -129,35 +129,12 @@ void printAll(int line, int col)
 
 void addVariable(int line, int col, var_tmp_t tmp, int type)
 {
-    //check if type is void
-
-    if(type==0)
-    {
-        log.error(line, col, "A variable can not be void");
-        return;
-    }
-
-    //check if variable with same name already exists
+    //check if type is void or name already exists as variable or function
+    if(checkVoid(line, col, type)){ return;}
+    if(checkVar(line, col, tmp.name)){  return;}
+    if(checkFuncName(line, col, tmp.name)){ return;}
 
     variable_t *variable;
-    HASH_FIND_STR(symboltable.currentScope->variables, tmp.name, variable);
-    if(variable!=NULL)
-    {
-        log.error(line, col, "Variable with name %s already exists", tmp.name);
-        return;
-    }
-
-    //check if function with same name already exists
-
-    function_t *function;
-    HASH_FIND_STR(symboltable.functions, tmp.name, function);
-    if(function!=NULL)
-    {
-        log.error(line, col, "Name %s is already used for a function", tmp.name);
-        return;
-    }
-
-    //add new variable
 
     variable = (variable_t*)malloc(sizeof(variable_t));
 
@@ -206,27 +183,14 @@ int compareParams(variable_t *p1, variable_t *p2)
 
 void declareFunction(int line, int col, char *name, int returnType, variable_t *parameters)
 {
-    //check if variable with same name already exists
 
-    variable_t *variable;
-    HASH_FIND_STR(symboltable.currentScope->variables, name, variable);
-    if(variable!=NULL)
-    {
-        log.error(line, col, "Name %s is already used for a variable", name);
-        return;
-    }
-    
-    //check if function with same name exists already
+
+    //check if type is void or name already exists as variable or function
+    if(checkVar(line, col, name)){  return;}
+    if(checkFuncName(line, col, name)){ return;}
 
     function_t *function;
     HASH_FIND_STR(symboltable.functions, name, function);
-    if(function!=NULL)
-    {
-        log.error(line, col, "Function with name %s is already declared", name);
-        return;
-    }
-
-    //add new function
 
     function = (function_t*)malloc(sizeof(function_t));
 
@@ -252,51 +216,16 @@ void declareFunction(int line, int col, char *name, int returnType, variable_t *
 
 void defineFunction(int line, int col, char *name, int returnType, variable_t *parameters)
 {
-    //check if variable with same name already exists
-
-    variable_t *variable;
-    HASH_FIND_STR(symboltable.currentScope->variables, name, variable);
-    if(variable!=NULL)
-    {
-        log.error(line, col, "Name %s is already used for a variable", name);
-        return;
-    }
     
-    //check if function with same name exists already
 
-    function_t *function;
-    HASH_FIND_STR(symboltable.functions, name, function);
-    if(function!=NULL)
-    {
-
-        //check whether function is already defined
-
-        if(function->referenceLine!=0)
-        {
-            log.error(line, col, "Function with name %s is already defined", name);
-            return;
-        }
-
-        if(function->returnType!=returnType)
-        {
-            log.error(line, col, "Return type of definition of function %s does not match the function declaration", name);
-            return;
-        }
-
-        if(compareParams(function->parameters, parameters))
-        {
-            log.error(line, col, "Parameters of definition of function %s do not match the function declaration", name);
-            return;
-        }
-
-        //add function definition
-        function->referenceLine = line;
-        
-    }
+        //check if type is void or name already exists as variable or function
+    if(checkVar(line, col, name)){  return;}
+    if(checkFunc(line, col, name, returnType, parameters)){ return; }
     else
     {
         //add new function
-
+        function_t *function;
+        HASH_FIND_STR(symboltable.functions, name, function);
         function = (function_t*)malloc(sizeof(function_t));
 
         function->name = name;
@@ -336,15 +265,11 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
 
 void addParameter(int line, int col, var_tmp_t tmp, int type)
 {
-    //check if variable with same name already exists
+    //check if variable with same name already exists and variable is not void
 
     variable_t *parameter;
-    HASH_FIND_STR(tmpParameters, tmp.name, parameter);
-    if(parameter!=NULL)
-    {
-        log.error(line, col, "Parameter with name %s already exists", tmp.name);
-        return;
-    }
+    if(checkVoid(line, col, type)){ return;}
+    if(checkVar(line, col, tmp.name)){  return;}
 
     //add new parameter
 

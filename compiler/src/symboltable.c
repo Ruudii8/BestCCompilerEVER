@@ -22,6 +22,7 @@ void init()
     global_scope->variables = NULL;
 
     symboltable.currentScope = global_scope;
+    symboltable.currentFunction = NULL;
 
     HASH_ADD_INT(symboltable.scopes, id, global_scope);
 
@@ -218,6 +219,8 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
         }
                 
         HASH_ADD_STR(symboltable.functions, name, function);
+
+        symboltable.currentFunction = function;
     }
     
     scope_t *function_scope = (scope_t*) malloc(sizeof(scope_t));
@@ -230,6 +233,7 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
     function_scope->variables = tmpParams;
 
     symboltable.currentScope = function_scope;
+
     symboltable.scopeCounter++;
 
     HASH_ADD_INT(symboltable.scopes, id, function_scope);

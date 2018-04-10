@@ -157,8 +157,8 @@ stmt
      | expression SEMICOLON
      | stmt_conditional
      | stmt_loop
-     | RETURN expression SEMICOLON
-     | RETURN SEMICOLON
+     | RETURN expression SEMICOLON {checkReturnInt(@1.first_line, @1.first_column, &$2);}
+     | RETURN SEMICOLON {checkReturnVoid(@1.first_line, @2.first_column);}
      | SEMICOLON /* empty statement */
      ;
 

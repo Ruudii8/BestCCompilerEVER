@@ -72,6 +72,35 @@ int checkFuncName(int line, int col, char *name)
     return 0;
 }
 
+int checkForInt(int line, int col, expression_t *exp)       //func TBD 
+    {
+        if(exp->exp_type == EXP_TYPE_LITERAL)
+        {
+            return 1;
+        }
+
+        if(exp->exp_type == EXP_TYPE_ARR)
+        {
+            checkForInt(line, col, exp);
+        }
+
+        if(exp->exp_type == EXP_TYPE_VAR)
+        {
+            variable_t *variable;
+            HASH_FIND_STR(symboltable.currentScope->variables, exp->var, variable);
+            if(variable->type == TYPE_INT)
+            {
+                return 1;
+            }
+        }
+
+        if(exp->exp_type == EXP_TYPE_FUNC)      //TBD
+        {
+
+        }
+
+        return 0;
+    }
 
 
 expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_t *exp2)
@@ -97,6 +126,27 @@ expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_
             }
         }
     }
+
+    if(exp1->exp_type == EXP_TYPE_VAR)
+    {
+        variable_t *variable;
+        HASH_FIND_STR(symboltable.currentScope->variables, exp1->var, variable);
+        if(variable->type == TYPE_INTARRAY)
+        {
+            if(exp2 != NULL)
+            {
+                log.error(line, col, "nothing can be assigned to an int[]");
+            }
+        }   
+        if(variable->type == TYPE_VOID)
+        {
+            log.error(line, col, "no variable with type void allowed");
+        }
+    }
+
+    
+
+
 
 
     expression_t *exp;

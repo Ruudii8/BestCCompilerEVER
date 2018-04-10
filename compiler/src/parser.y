@@ -9,6 +9,7 @@
   #include "symboltable.h"
   #include "typecheck.h"
   #include "types.h"
+  #include "logger.h"
 
   void yyerror (const char*);
   extern int yylex(void);

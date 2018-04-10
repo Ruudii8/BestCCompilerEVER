@@ -102,9 +102,13 @@ int checkForInt(int line, int col, expression_t *exp)       //func TBD
 
 void checkReturnInt(int line, int col, expression_t *exp)
 {
+    //TODO check if exp is an int
+
+
     if(symboltable.currentFunction->returnType != TYPE_INT)
     {
         log.error(line, col, "Return value does not match return type");
+
     }
 
     return;

@@ -186,6 +186,8 @@ void declareFunction(int line, int col, char *name, int returnType, variable_t *
             
     HASH_ADD_STR(symboltable.functions, name, function);
 
+    symboltable.currentFunction = function;
+
 }
 
 
@@ -287,6 +289,7 @@ void endFunctionScope(int line, int col)
     scope_t *scope;
     HASH_FIND_INT(symboltable.scopes, &id, scope);
     symboltable.currentScope = scope;
+   // symboltable.currentFunction = NULL;
 }
 
 

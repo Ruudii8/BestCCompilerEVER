@@ -5,6 +5,7 @@
 #include "symboltable.h"
 #include "diag.h"
 #include "logger.h"
+#include "typecheck.h"
 
 
 variable_t *tmpParameters = NULL;
@@ -119,7 +120,9 @@ void printAll(int line, int col)
     printf("--------------------------------------------------------------------------------------\n");
 
 
-    printf("\n################################### Symbol tables ####################################\n");
+    printf("\n################################## Symbol tables ####################################\n");
+
+
 
 }
 
@@ -382,4 +385,5 @@ void endFunctionScope(int line, int col)
     HASH_FIND_INT(symboltable.scopes, &id, scope);
     symboltable.currentScope = scope;
 }
+
 

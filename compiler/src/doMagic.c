@@ -1,1 +1,8 @@
-//Todo
+#include "doMagic.h"
+
+
+
+
+
+
+

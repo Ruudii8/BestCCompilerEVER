@@ -78,13 +78,23 @@ expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_
      log.info(line, col, "exp1 = %d, exp2 = %d", exp1->exp_type, exp2->exp_type);
 
 
-
-
-    if(exp2->exp_type == EXP_TYPE_ARR)
+    if(exp1->exp_type == EXP_TYPE_LITERAL)
     {
-        log.error(line, col, "error");
-    }
 
+        if(exp2->exp_type == EXP_TYPE_VAR)
+        {
+            variable_t *variable;
+            HASH_FIND_STR(symboltable.currentScope->variables, exp2->var, variable);
+            if(variable->type == TYPE_VOID)
+            {
+                log.error(line, col, "void cannot be assigned to int");
+            }
+            if(variable->type == TYPE_INTARRAY)
+            {
+                log.error(line, col, "int[] cannot be assigned to int");
+            }
+        }
+    }
 
 
     expression_t *exp;
@@ -119,5 +129,6 @@ int compareParams(variable_t *p1, variable_t *p2)
 
     return 0;
 }
+
 
 

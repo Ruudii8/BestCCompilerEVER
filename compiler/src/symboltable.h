@@ -10,12 +10,12 @@ variable_t *tmpParameters;
 int tmpParameterCount;
    
 
-extern void init(void);
-extern void printAll(int line, int col);
-extern void addVariable(int line, int col, var_tmp_t tmp, int type);
-extern void declareFunction(int line, int col, char *name, int returnType, variable_t *parameters);
-extern void defineFunction(int line, int col, char *name, int returnType, variable_t *parameters);
-extern void endFunctionScope(int line, int col);
-extern void addParameter(int line, int col, var_tmp_t tmp, int type);
-extern variable_t* returnParameters(void);
+void init(void);
+void printAll(int line, int col);
+void addVariable(int line, int col, var_tmp_t tmp, int type);
+void declareFunction(int line, int col, char *name, int returnType, variable_t *parameters);
+void defineFunction(int line, int col, char *name, int returnType, variable_t *parameters);
+void endFunctionScope(int line, int col);
+void addParameter(int line, int col, var_tmp_t tmp, int type);
+variable_t* returnParameters(void);
 

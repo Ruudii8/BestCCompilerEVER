@@ -73,6 +73,28 @@ int checkFuncName(int line, int col, char *name)
 }
 
 
+void checkReturnInt(int line, int col, expression_t *exp)
+{
+    if(symboltable.currentFunction->returnType != TYPE_INT)
+    {
+        log.error(line, col, "Return value does not match return type");
+    }
+
+    return;
+}
+
+
+void checkReturnVoid(int line, int col)
+{
+    if(symboltable.currentFunction->returnType != TYPE_VOID)
+    {
+        log.error(line, col, "Return value does not match return type");
+    }
+
+    return;
+}
+
+
 
 expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_t *exp2)
 {

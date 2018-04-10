@@ -157,8 +157,8 @@ stmt
      | expression SEMICOLON
      | stmt_conditional
      | stmt_loop
-     | RETURN expression SEMICOLON
-     | RETURN SEMICOLON
+     | RETURN expression SEMICOLON {checkReturnInt(@1.first_line, @1.first_column, &$2);}
+     | RETURN SEMICOLON {checkReturnVoid(@1.first_line, @2.first_column);}
      | SEMICOLON /* empty statement */
      ;
 
@@ -195,7 +195,7 @@ expression
      | expression DIV expression
      | MINUS expression %prec UNARY_MINUS
      | PLUS expression %prec UNARY_PLUS
-     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_VAR, NULL, $1, NULL, &$3};}
+     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_ARR, NULL, $1, NULL, &$3};}
      | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
      | function_call {$$ = $1;}
      | primary {$$ = $1;}

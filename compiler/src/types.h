@@ -62,6 +62,7 @@ typedef struct
     function_t *functions;
     int scopeCounter;
     scope_t *currentScope;
+    function_t *currentFunction;
 
 } symboltable_t;
 

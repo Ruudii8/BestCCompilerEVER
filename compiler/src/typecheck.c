@@ -1,20 +1,13 @@
 #include "typecheck.h"
+#include <stdio.h>
 
 
 //here comes all the type testing stuff
 
-
-int checkVoid(int type)
-{
-    //TODO
+//return type correct, correct zuweisungen
 
 
-
-    return 0;
-}
-
-
-int checkVar(variable_t *variables, char *name)
+int checkVoid(int line, int col, int type)
 {
     //TODO
 
@@ -23,11 +16,45 @@ int checkVar(variable_t *variables, char *name)
 }
 
 
-int checkFunc(function_t functions, char *name)
+int checkVar(int line, int col, char *name)
 {
     //TODO
 
+
     return 0;
+}
+
+
+int checkFunc(int line, int col, char *name)
+{
+    //TODO
+
+    symboltable.currentScope;
+
+    return 0;
+}
+
+
+
+expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_t *exp2)
+{
+
+     log.info(line, col, "exp1 = %d, exp2 = %d", exp1->exp_type, exp2->exp_type);
+
+
+
+
+    if(exp2->exp_type == EXP_TYPE_ARR)
+    {
+        log.error(line, col, "error");
+    }
+
+
+
+    expression_t *exp;
+
+    return NULL;
+   
 }
 
 

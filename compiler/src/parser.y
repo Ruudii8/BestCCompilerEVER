@@ -7,6 +7,7 @@
   #include "uthash.h"
   #include "diag.h"
   #include "symboltable.h"
+  #include "typecheck.h"
   #include "types.h"
 
   void yyerror (const char*);
@@ -176,7 +177,7 @@ stmt_loop
      ;
 									
 expression
-     : expression ASSIGN expression
+     : expression ASSIGN expression {checkAssignment(@1.first_line, @1.first_column, &$1, &$3);}
      | expression LOGICAL_OR expression
      | expression LOGICAL_AND expression
      | LOGICAL_NOT expression

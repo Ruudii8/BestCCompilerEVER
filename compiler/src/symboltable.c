@@ -120,7 +120,9 @@ void printAll(int line, int col)
     printf("--------------------------------------------------------------------------------------\n");
 
 
-    printf("\n################################### Symbol tables ####################################\n");
+    printf("\n################################## Symbol tables ####################################\n");
+
+
 
 }
 
@@ -385,10 +387,3 @@ void endFunctionScope(int line, int col)
 }
 
 
-
-void checkAssignment(int line, int col, char *name, char *name1)
-{
-    log.debug(line, col, "name = %s, name1 = %s", name, name1);
-
-
-}

@@ -8,7 +8,7 @@ symboltable_t symboltable;
 
 variable_t *tmpParameters;
 int tmpParameterCount;
-
+   
 
 void init(void);
 void printAll(int line, int col);

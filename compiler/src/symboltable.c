@@ -154,32 +154,6 @@ void addVariable(int line, int col, var_tmp_t tmp, int type)
 
 }
 
-int compareParams(variable_t *p1, variable_t *p2)
-{
-    variable_t *params1, *tmpVar, *params2;
-    HASH_ITER(hh, p1, params1, tmpVar)
-    {
-
-        HASH_FIND_STR(p2, params1->name, params2);
-        if(params2 == NULL)
-        {
-            return 1;
-        }
-
-        if(params1->type != params2->type || params1->order != params2->order)
-        {
-            return 1;
-        }
-    }
-
-    if(params2->hh.next != NULL)
-    {
-        return 1;
-    }
-
-    return 0;
-}
-
 
 void declareFunction(int line, int col, char *name, int returnType, variable_t *parameters)
 {

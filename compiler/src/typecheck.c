@@ -1,15 +1,9 @@
 #include "typecheck.h"
 #include <stdio.h>
-#include <types.h>
 
-//here comes all the type testing stuff
-
-//return type correct, correct zuweisungen
-
-
+//checks if type is void and throws and throws an error when true
 int checkVoid(int line, int col, int type)
 {
-   
     if(type==TYPE_VOID)
     {
         log.error(line, col, "A variable can not be void");
@@ -18,7 +12,7 @@ int checkVoid(int line, int col, int type)
     return 0;
 }
 
-
+//Checks if var with same name already exists and throws an error wehn true
 int checkVar(int line, int col, char *name)
 {
     variable_t *variable;
@@ -32,6 +26,7 @@ int checkVar(int line, int col, char *name)
     return 0;
 }
 
+//Checks if function with same name already exists and whether its already declared.
 int checkFunc(int line, int col, char *name, int type, variable_t *parameters)
 {
     function_t *function;
@@ -43,6 +38,8 @@ int checkFunc(int line, int col, char *name, int type, variable_t *parameters)
             log.error(line, col, "Function with name %s is already defined", name);
             return 1;
         }
+
+        //When function already is declared but not defined paramters must be checked
 
         if(function->returnType!=type)
         {
@@ -59,6 +56,7 @@ int checkFunc(int line, int col, char *name, int type, variable_t *parameters)
     return 0;
 }
 
+//Checks if function name already exists and throws an error wehn true
 int checkFuncName(int line, int col, char *name)
 {
    function_t *function;
@@ -101,6 +99,28 @@ int checkForInt(int line, int col, expression_t *exp)       //func TBD
 
         return 0;
     }
+
+void checkReturnInt(int line, int col, expression_t *exp)
+{
+    if(symboltable.currentFunction->returnType != TYPE_INT)
+    {
+        log.error(line, col, "Return value does not match return type");
+    }
+
+    return;
+}
+
+
+void checkReturnVoid(int line, int col)
+{
+    if(symboltable.currentFunction->returnType != TYPE_VOID)
+    {
+        log.error(line, col, "Return value does not match return type");
+    }
+
+    return;
+}
+
 
 
 expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_t *exp2)
@@ -155,6 +175,32 @@ expression_t* checkAssignment(int line, int col, expression_t *exp1, expression_
    
 }
 
+//compares if type of params is equal
+int compareParams(variable_t *p1, variable_t *p2)
+{
+    variable_t *params1, *tmpVar, *params2;
+    HASH_ITER(hh, p1, params1, tmpVar)
+    {
+
+        HASH_FIND_STR(p2, params1->name, params2);
+        if(params2 == NULL)
+        {
+            return 1;
+        }
+
+        if(params1->type != params2->type || params1->order != params2->order)
+        {
+            return 1;
+        }
+    }
+
+    if(params2->hh.next != NULL)
+    {
+        return 1;
+    }
+
+    return 0;
+}
 
 
 

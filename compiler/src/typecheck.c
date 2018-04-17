@@ -52,14 +52,19 @@ int checkFunc(int line, int col, char *name, int type, variable_t *parameters)
             log.error(line, col, "Parameters of definition of function %s do not match the function declaration", name);
             return 1;
         }
+
+
+        function->referenceLine = line;
     }
+
+
     return 0;
 }
 
 //Checks if function name already exists and throws an error wehn true
 int checkFuncName(int line, int col, char *name)
 {
-   function_t *function;
+    function_t *function;
     HASH_FIND_STR(symboltable.functions, name, function);
     if(function!=NULL)
     {
@@ -70,39 +75,179 @@ int checkFuncName(int line, int col, char *name)
     return 0;
 }
 
-int checkForInt(int line, int col, expression_t *exp)       //func TBD 
+
+
+
+
+int checkForInt(int line, int col, expression_t exp)       //func TBD 
+{
+    if(exp.exp_type == EXP_TYPE_LITERAL)
     {
-        if(exp->exp_type == EXP_TYPE_LITERAL)
+        return 1;
+    }
+
+    if(exp.exp_type == EXP_TYPE_ARR)
+    {
+        if(checkForInt(line, col, *exp.exp))
         {
             return 1;
         }
+    }
 
-        if(exp->exp_type == EXP_TYPE_ARR)
+    if(exp.exp_type == EXP_TYPE_VAR)
+    {
+        variable_t *variable;
+        HASH_FIND_STR(symboltable.currentScope->variables, exp.var, variable);
+        if(variable!=NULL)
         {
-            checkForInt(line, col, exp);
+            if(variable->type == TYPE_INT)
+            {
+                
+                return 1;
+            }
         }
 
-        if(exp->exp_type == EXP_TYPE_VAR)
+        int id = 0;
+        scope_t *scope;
+        HASH_FIND_INT(symboltable.scopes, &id, scope);
+
+
+        HASH_FIND_STR(scope->variables, exp.var, variable);
+        if(variable!=NULL)
         {
-            variable_t *variable;
-            HASH_FIND_STR(symboltable.currentScope->variables, exp->var, variable);
+
+
             if(variable->type == TYPE_INT)
             {
                 return 1;
             }
         }
 
-        if(exp->exp_type == EXP_TYPE_FUNC)      //TBD
-        {
-
-        }
-
-        return 0;
     }
 
-void checkReturnInt(int line, int col, expression_t *exp)
+    if(exp.exp_type == EXP_TYPE_FUNC)      //TBD
+    {
+        function_t *function;
+        HASH_FIND_STR(symboltable.functions, exp.var, function);
+        if(function==NULL)
+        {
+            return 0;
+        }
+        if(function!=NULL)
+        {
+            if(function->returnType == TYPE_INT)
+            {
+                return 1;
+            }
+        }
+    }
+
+
+
+    log.error(line, col, "Expression must be type int");
+
+    return 0;
+}
+
+
+int checkForArray(int line, int col, expression_t exp)
+{
+    if(exp.exp_type == EXP_TYPE_VAR)
+    {
+        variable_t *variable;
+        HASH_FIND_STR(symboltable.currentScope->variables, exp.var, variable);
+        if(variable!=NULL)
+        {
+            if(variable->type == TYPE_INTARRAY)
+            {
+                return 1;
+            }
+        }
+
+        int id = 0;
+        scope_t *scope;
+        HASH_FIND_INT(symboltable.scopes, &id, scope);
+
+
+        HASH_FIND_STR(scope->variables, exp.var, variable);
+        if(variable!=NULL)
+        {
+            if(variable->type == TYPE_INTARRAY)
+            {
+                return 1;
+            }
+        }
+
+    }
+
+    log.error(line, col, "Expression must be type array");
+
+    return 0;
+}
+
+
+int checkIfAssignable(int line, int col, expression_t exp)
+{
+
+
+
+    if(exp.exp_type == EXP_TYPE_ARR)
+    {
+        if(checkForInt(line, col, *exp.exp))
+        {
+            return 1;
+        }
+
+    }
+
+    if(exp.exp_type == EXP_TYPE_VAR)
+    {
+
+
+        variable_t *variable;
+        HASH_FIND_STR(symboltable.currentScope->variables, exp.var, variable);
+        if(variable!=NULL)
+        {
+
+            if(variable->type == TYPE_INT)
+            {
+                return 1;
+            }
+        }
+
+
+        int id = 0;
+        scope_t *scope;
+        HASH_FIND_INT(symboltable.scopes, &id, scope);
+
+
+        HASH_FIND_STR(scope->variables, exp.var, variable);
+        if(variable!=NULL)
+        {
+
+
+            if(variable->type == TYPE_INT)
+            {
+                return 1;
+            }
+        }
+
+    }
+
+    log.error(line, col, "Expression must be assignable");
+
+    return 0;
+
+}
+
+void checkReturnInt(int line, int col, expression_t exp)
 {
     //TODO check if exp is an int
+    if(!checkForInt(line, col, exp))
+    {
+
+    }
+
 
 
     if(symboltable.currentFunction->returnType != TYPE_INT)
@@ -120,6 +265,73 @@ void checkReturnVoid(int line, int col)
     if(symboltable.currentFunction->returnType != TYPE_VOID)
     {
         log.error(line, col, "Return value does not match return type");
+    }
+
+    return;
+}
+
+
+void checkFuncCallParams(int line, int col, expression_t exp)
+{
+    function_t *function;
+    HASH_FIND_STR(symboltable.functions, exp.var, function);
+    if(function != NULL)
+    {
+        funcCallParamList_t *paramList = (funcCallParamList_t*)malloc(sizeof(funcCallParamList_t));
+
+        paramList = exp.paramList;
+
+        if(paramList != NULL)
+        {
+            while(paramList->prev != NULL)
+            {
+                paramList = paramList->prev;
+            }
+        }
+       
+
+        variable_t *param, *tmpVar;
+
+        HASH_ITER(hh, function->parameters, param, tmpVar)
+        {
+            if(paramList == NULL)
+            {
+                log.error(line, col, "Missing parameters on function call");
+                return;
+            }
+
+
+            if(param->type == TYPE_INT)
+            {
+                if(!checkForInt(line, col, paramList->exp))
+                {
+                    
+                    return;
+                }
+            }
+
+            if(param->type == TYPE_INTARRAY)
+            {
+               
+                if(!checkForArray(line, col, paramList->exp))
+                {
+                    return;
+                }
+            }
+
+            paramList = paramList->next;
+
+        }
+
+        if(paramList != NULL)
+        {
+            log.error(line, col, "Too many parameters on function call");
+        }
+
+    }
+    else
+    {
+        log.error(line, col, "Called function does not exist");
     }
 
     return;

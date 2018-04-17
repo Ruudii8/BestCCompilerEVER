@@ -67,21 +67,25 @@ typedef struct
 } symboltable_t;
 
 
-typedef struct
+struct exp
 {
     int exp_type;
     int literal;
     char *var;
-    struct funcCallParamList_t *paramList;
-    struct expression_t *exp;
+    struct funcCallParamList *paramList;
+    struct exp *exp;
+
+};
+
+typedef struct exp expression_t;
 
 
-} expression_t;
-
-
-typedef struct
+struct funcCallParamList
 {
-    //TODO
-    int test;   //only for testing
+    expression_t exp;
+    struct funcCallParamList *prev;
+    struct funcCallParamList *next;
 
-} funcCallParamList_t;
+};
+
+typedef struct funcCallParamList funcCallParamList_t;

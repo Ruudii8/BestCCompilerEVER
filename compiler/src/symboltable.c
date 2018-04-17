@@ -32,11 +32,11 @@ void init()
 
 char* returnTypeString(int type)
 {
-    if(type == 1)
+    if(type == TYPE_INT)
     {
         return "int";
     }
-    else if(type==0)
+    else if(type == TYPE_VOID)
     {
         return "void";
     }
@@ -195,15 +195,42 @@ void defineFunction(int line, int col, char *name, int returnType, variable_t *p
 {
     
 
-        //check if type is void or name already exists as variable or function
+    //check if type is void or name already exists as variable or function
     if(checkVar(line, col, name)){  return;}
-    if(checkFunc(line, col, name, returnType, parameters)){ return; }
+
+     function_t *function;
+    HASH_FIND_STR(symboltable.functions, name, function);
+    if(function!=NULL)
+    {
+ 
+        //check whether function is already defined
+
+        if(function->referenceLine!=0)
+        {
+            log.error(line, col, "Function with name %s is already defined", name);
+            return;
+        }
+
+        if(function->returnType!=returnType)
+        {
+            log.error(line, col, "Return type of definition of function %s does not match the function declaration", name);
+            return;
+        }
+
+        if(compareParams(function->parameters, parameters))
+        {
+            log.error(line, col, "Parameters of definition of function %s do not match the function declaration", name);
+            return;
+        }
+
+        //add function definition
+        function->referenceLine = line;
+        
+    }
     else
     {
         //add new function
-        function_t *function;
-        HASH_FIND_STR(symboltable.functions, name, function);
-        function = (function_t*)malloc(sizeof(function_t));
+        function_t *function = (function_t*)malloc(sizeof(function_t));
 
         function->name = name;
         function->returnType = returnType;

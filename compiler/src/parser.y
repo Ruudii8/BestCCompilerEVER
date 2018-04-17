@@ -6,10 +6,11 @@
 	// Project-specific includes
   #include "uthash.h"
   #include "diag.h"
+  #include "types.h"
   #include "symboltable.h"
   #include "typecheck.h"
-  #include "types.h"
   #include "logger.h"
+  #include "doMagic.h"
 
   void yyerror (const char*);
   extern int yylex(void);
@@ -22,7 +23,7 @@
   int type;
   var_tmp_t var_tmp;
   expression_t exp;
-  funcCallParamList_t paramList;
+  funcCallParamList_t *paramList;
 }
  
 // Verbose error messages
@@ -158,7 +159,7 @@ stmt
      | expression SEMICOLON
      | stmt_conditional
      | stmt_loop
-     | RETURN expression SEMICOLON {checkReturnInt(@1.first_line, @1.first_column, &$2);}
+     | RETURN expression SEMICOLON {checkReturnInt(@1.first_line, @1.first_column, $2);}
      | RETURN SEMICOLON {checkReturnVoid(@1.first_line, @2.first_column);}
      | SEMICOLON /* empty statement */
      ;
@@ -168,37 +169,37 @@ stmt_block
      ;
 	
 stmt_conditional
-     : IF PARA_OPEN expression PARA_CLOSE stmt
-     | IF PARA_OPEN expression PARA_CLOSE stmt ELSE stmt
+     : IF PARA_OPEN expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
+     | IF PARA_OPEN expression PARA_CLOSE stmt ELSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
      ;
 									
 stmt_loop
-     : WHILE PARA_OPEN expression PARA_CLOSE stmt
-     | DO stmt WHILE PARA_OPEN expression PARA_CLOSE SEMICOLON
+     : WHILE PARA_OPEN expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
+     | DO stmt WHILE PARA_OPEN expression PARA_CLOSE SEMICOLON {checkForInt(@1.first_line, @1.first_column, $5);}
      ;
 									
 expression
-     : expression ASSIGN expression {checkAssignment(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression LOGICAL_OR expression {logicalOr(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression LOGICAL_AND expression {logicalAnd(@1.first_line, @1.first_column, &$1, &$3);}
-     | LOGICAL_NOT expression
-     | expression EQ expression {equals(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression NE expression {notEquals(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression LS expression {lesser(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression LSEQ expression {lesserEquals(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression GTEQ expression {greaterEquals(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression GT expression {greater(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression PLUS expression {plus(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression MINUS expression {minus(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression SHIFT_LEFT expression {shiftLeft(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression SHIFT_RIGHT expression {shiftRight(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression MUL expression {multiply(@1.first_line, @1.first_column, &$1, &$3);}
-     | expression DIV expression {divide(@1.first_line, @1.first_column, &$1, &$3);}
-     | MINUS expression %prec UNARY_MINUS {unaryMinus(@1.first_line, @1.first_column, &$2);}
-     | PLUS expression %prec UNARY_PLUS {unaryPlus(@1.first_line, @1.first_column, &$2);}
-     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_VAR, NULL, $1, NULL, &$3};}
+     : expression ASSIGN expression {$$ = assign(@1.first_line, @1.first_column, $1, $3);}
+     | expression LOGICAL_OR expression {$$ = logicalOr(@1.first_line, @1.first_column, $1, $3);}
+     | expression LOGICAL_AND expression {$$ = logicalAnd(@1.first_line, @1.first_column, $1, $3);}
+     | LOGICAL_NOT expression {$$ = logicalNot(@1.first_line, @1.first_column, $2);}
+     | expression EQ expression {$$ = equals(@1.first_line, @1.first_column, $1, $3);}
+     | expression NE expression {$$ = notEquals(@1.first_line, @1.first_column, $1, $3);}
+     | expression LS expression {$$ = lesser(@1.first_line, @1.first_column, $1, $3);}
+     | expression LSEQ expression {$$ = lesserEquals(@1.first_line, @1.first_column, $1, $3);}
+     | expression GTEQ expression {$$ = greaterEquals(@1.first_line, @1.first_column, $1, $3);}
+     | expression GT expression {$$ = greater(@1.first_line, @1.first_column, $1, $3);}
+     | expression PLUS expression {$$ = plus(@1.first_line, @1.first_column, $1, $3);}
+     | expression MINUS expression {$$ = minus(@1.first_line, @1.first_column, $1, $3);}
+     | expression SHIFT_LEFT expression {$$ = shiftLeft(@1.first_line, @1.first_column, $1, $3);}
+     | expression SHIFT_RIGHT expression {$$ = shiftRight(@1.first_line, @1.first_column, $1, $3);}
+     | expression MUL expression {$$ = multiply(@1.first_line, @1.first_column, $1, $3);}
+     | expression DIV expression {$$ = divide(@1.first_line, @1.first_column, $1, $3);}
+     | MINUS expression %prec UNARY_MINUS {$$ = unaryMinus(@1.first_line, @1.first_column, $2);}
+     | PLUS expression %prec UNARY_PLUS {$$ = unaryPlus(@1.first_line, @1.first_column, $2);}
+     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_ARR, NULL, $1, NULL, &$3};}
      | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
-     | function_call {$$ = $1;}
+     | function_call {checkFuncCallParams(@1.first_line, @1.first_column, $1); $$ = $1; }
      | primary {$$ = $1;}
      ;
 
@@ -209,12 +210,12 @@ primary
 
 function_call
       : ID PARA_OPEN PARA_CLOSE {$$ = (expression_t){EXP_TYPE_FUNC, NULL, $1, NULL, NULL};}
-      | ID PARA_OPEN function_call_parameters PARA_CLOSE {$$ = (expression_t){EXP_TYPE_FUNC, NULL, $1, NULL, NULL};}
+      | ID PARA_OPEN function_call_parameters PARA_CLOSE {$$ = (expression_t){EXP_TYPE_FUNC, NULL, $1, $3, NULL};}
       ;
 
 function_call_parameters
-     : function_call_parameters COMMA expression {;}
-     | expression {;}
+     : function_call_parameters COMMA expression {$$ = addExprAsParam(@1.first_line, @1.first_column, $1, $3);}
+     | expression {$$ = addExprAsParam(@1.first_line, @1.first_column, NULL , $1);}
      ;
 
 %%

@@ -6,8 +6,9 @@
 #include "logger.h"
 #include "typecheck.h"
 #include <stdlib.h>
+#include <stdio.h>
 
-
+FILE *ir;
 
 expression_t assign(int line, int col, expression_t exp1, expression_t exp2);
 expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2);

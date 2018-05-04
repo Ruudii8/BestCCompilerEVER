@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "main.h"
+#include "doMagic.h"
 
 /* Constants */
 static const char *C_EXT = ".c";
@@ -270,6 +271,8 @@ int main (int argc, char *argv[]) {
 
   FILE *f = fopen(cc_options.input_file, "r");
 
+  ir = fopen(cc_options.ir_file, "w");
+
   if(f)
   {
     yyin = f;
@@ -282,6 +285,10 @@ int main (int argc, char *argv[]) {
   else{
     yyparse();
   }
+
+
+  fclose(ir);
+  
 
 
   rm_cleanup_resources(&resource_mgr);

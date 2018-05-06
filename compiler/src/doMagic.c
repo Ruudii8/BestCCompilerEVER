@@ -6,6 +6,16 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
 
     checkIfAssignable(line, col, exp1);
     checkForInt(line, col, exp2);
+
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%s = %d\n", exp1.var, exp2.literal);
+    }
+    else if (exp2.exp_type == EXP_TYPE_VAR)
+    {
+        fprintf(ir, "%s = %s\n", exp1.var, exp2.var);
+    }
+
     
     return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
 }

@@ -3,7 +3,6 @@
 #include "uthash.h"
 #include "types.h"
 
-
 symboltable_t symboltable;
 
 variable_t *tmpParameters;

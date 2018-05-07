@@ -1,9 +1,9 @@
 #include "doMagic.h"
 
+int counter = 0;
 
 expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
 {
-
     checkIfAssignable(line, col, exp1);
     checkForInt(line, col, exp2);
 
@@ -23,6 +23,7 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
 
 expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2)
 {
+
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
     return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
@@ -97,7 +98,32 @@ expression_t plus(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
+    char tmp1[255];
+    char tmp2[255];
+
+    if(exp1.exp_type == EXP_TYPE_LITERAL){
+        sprintf(tmp1, "%d", exp1.literal);
+    }
+    else if (exp1.exp_type == EXP_TYPE_VAR)
+    {
+        strcpy(tmp1, exp1.var);
+    }
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        sprintf(tmp2, "%d", exp2.literal);
+    }
+    else if (exp2.exp_type == EXP_TYPE_VAR)
+    {
+        strcpy(tmp2, exp2.var);
+    }
+
+    fprintf(ir, ".t%d = %s + %s\n", counter, tmp1, tmp2);
+
+    char tmp3[10] = ".t1";
+    sprintf(tmp3, ".t%d", counter++);
+
+
+    return (expression_t) {EXP_TYPE_LITERAL, 1, *tmp3, NULL, NULL};
 }
 
 

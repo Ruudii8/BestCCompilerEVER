@@ -94,8 +94,16 @@ int checkForInt(int line, int col, expression_t exp)       //func TBD
         }
     }
 
+    
+
     if(exp.exp_type == EXP_TYPE_VAR)
     {
+
+        //if variable begins with . it's from intermediate code
+        if(strcmp(exp.var, ".")){
+            return 1;
+        }
+
         variable_t *variable;
         HASH_FIND_STR(symboltable.currentScope->variables, exp.var, variable);
         if(variable!=NULL)
@@ -105,6 +113,7 @@ int checkForInt(int line, int col, expression_t exp)       //func TBD
                 
                 return 1;
             }
+            
         }
 
         int id = 0;

@@ -9,11 +9,14 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
 
     if(exp2.exp_type == EXP_TYPE_LITERAL)
     {
-        fprintf(ir, "%s = %d\n", exp1.var, exp2.literal);
+        fprintf(ir, "int %s = %d;\n", exp1.var, exp2.literal);
     }
     else if (exp2.exp_type == EXP_TYPE_VAR)
     {
-        fprintf(ir, "%s = %s\n", exp1.var, exp2.var);
+        fprintf(ir, "int %s = %s;\n", exp1.var, exp2.var);
+    }
+    else if (exp2.exp_type == EXP_TYPE_TVALUE){
+        fprintf(ir, "int %s = %s;\n", exp1.var, exp2.var);
     }
 
     
@@ -26,6 +29,9 @@ expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2)
 
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
+
+    
+
     return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
 }
 
@@ -117,13 +123,13 @@ expression_t plus(int line, int col, expression_t exp1, expression_t exp2)
         strcpy(tmp2, exp2.var);
     }
 
-    fprintf(ir, ".t%d = %s + %s\n", counter, tmp1, tmp2);
+    fprintf(ir, "int t%d = %s + %s;\n", counter, tmp1, tmp2);
 
-    char tmp3[10] = ".t1";
-    sprintf(tmp3, ".t%d", counter++);
+    char tmp3[10];
+    sprintf(tmp3, "t%d", counter++);
 
 
-    return (expression_t) {EXP_TYPE_LITERAL, 1, *tmp3, NULL, NULL};
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp3, NULL, NULL};
 }
 
 
@@ -131,7 +137,32 @@ expression_t minus(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
+    char tmp1[255];
+    char tmp2[255];
+
+    if(exp1.exp_type == EXP_TYPE_LITERAL){
+        sprintf(tmp1, "%d", exp1.literal);
+    }
+    else if (exp1.exp_type == EXP_TYPE_VAR)
+    {
+        strcpy(tmp1, exp1.var);
+    }
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        sprintf(tmp2, "%d", exp2.literal);
+    }
+    else if (exp2.exp_type == EXP_TYPE_VAR)
+    {
+        strcpy(tmp2, exp2.var);
+    }
+
+    fprintf(ir, "int t%d = %s + %s;\n", counter, tmp1, tmp2);
+
+    char tmp3[10];
+    sprintf(tmp3, "t%d", counter++);
+
+
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp3, NULL, NULL};
 }
 
 
@@ -199,5 +230,27 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
     return newParamList;
 }
 
+expression_t evalArray(int line, int col, char *name, expression_t exp){
+    
+    if(checkForInt(line, col, exp))
+    {
+        
+    }
 
+    if(exp.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "int t%d = %s[%d];\n", counter, name, exp.literal);
+    }
+    else if(exp.exp_type == EXP_TYPE_VAR)
+    {
+        fprintf(ir, "int t%d = %s[%s];\n", counter, name, exp.var);
+    }
+
+    char tmp3[10];
+    sprintf(tmp3, "t%d", counter++);
+
+
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp3, NULL, NULL};
+
+}
 

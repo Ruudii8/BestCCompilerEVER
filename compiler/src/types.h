@@ -11,7 +11,7 @@
 #define EXP_TYPE_ARR 2
 #define EXP_TYPE_FUNC 3
 #define EXP_TYPE_EXP 4
-
+#define EXP_TYPE_TVALUE 5
 
 //structs
 

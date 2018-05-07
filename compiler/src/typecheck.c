@@ -81,6 +81,12 @@ int checkFuncName(int line, int col, char *name)
 
 int checkForInt(int line, int col, expression_t exp)       //func TBD 
 {
+
+    if(exp.exp_type == EXP_TYPE_TVALUE)
+    {
+        return 1;
+    }
+
     if(exp.exp_type == EXP_TYPE_LITERAL)
     {
         return 1;
@@ -98,11 +104,6 @@ int checkForInt(int line, int col, expression_t exp)       //func TBD
 
     if(exp.exp_type == EXP_TYPE_VAR)
     {
-
-        //if variable begins with . it's from intermediate code
-        if(strcmp(exp.var, ".")){
-            return 1;
-        }
 
         variable_t *variable;
         HASH_FIND_STR(symboltable.currentScope->variables, exp.var, variable);
@@ -197,8 +198,12 @@ int checkForArray(int line, int col, expression_t exp)
 
 int checkIfAssignable(int line, int col, expression_t exp)
 {
+    
 
-
+    if(exp.exp_type == EXP_TYPE_TVALUE)
+    {
+        return 1;
+    }
 
     if(exp.exp_type == EXP_TYPE_ARR)
     {

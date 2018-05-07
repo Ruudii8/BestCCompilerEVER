@@ -197,7 +197,7 @@ expression
      | expression DIV expression {$$ = divide(@1.first_line, @1.first_column, $1, $3);}
      | MINUS expression %prec UNARY_MINUS {$$ = unaryMinus(@1.first_line, @1.first_column, $2);}
      | PLUS expression %prec UNARY_PLUS {$$ = unaryPlus(@1.first_line, @1.first_column, $2);}
-     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = (expression_t){EXP_TYPE_ARR, NULL, $1, NULL, &$3};}
+     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = evalArray(@1.first_line, @1.first_column, $1, $3);}
      | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
      | function_call {checkFuncCallParams(@1.first_line, @1.first_column, $1); $$ = $1; }
      | primary {$$ = $1;}

@@ -28,5 +28,6 @@ expression_t multiply(int line, int col, expression_t exp1, expression_t exp2);
 expression_t divide(int line, int col, expression_t exp1, expression_t exp2);
 expression_t unaryMinus(int line, int col, expression_t exp);
 expression_t unaryPlus(int line, int col, expression_t exp);
+expression_t evalArray(int line, int col, char *name, expression_t exp);
 
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp);

@@ -169,14 +169,22 @@ stmt_block
      ;
 	
 stmt_conditional
-     : IF PARA_OPEN expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
-     | IF PARA_OPEN expression PARA_CLOSE stmt ELSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
+     : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifStart(@1.first_line, @1.first_column, $3);}
+     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
      ;
 									
 stmt_loop
-     : WHILE PARA_OPEN expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
-     | DO stmt WHILE PARA_OPEN expression PARA_CLOSE SEMICOLON {checkForInt(@1.first_line, @1.first_column, $5);}
+     : WHILE marker PARA_OPEN jump_expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
+     | DO marker stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {checkForInt(@1.first_line, @1.first_column, $5);}
      ;
+
+jump_expression
+     : expression {}
+
+
+marker
+     : %empty {$$ = marker}
+
 									
 expression
      : expression ASSIGN expression {$$ = assign(@1.first_line, @1.first_column, $1, $3);}

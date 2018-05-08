@@ -7,18 +7,25 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
     checkIfAssignable(line, col, exp1);
     checkForInt(line, col, exp2);
 
-    if(exp2.exp_type == EXP_TYPE_LITERAL)
+
+    if(exp1.exp_type == EXP_TYPE_VAR || exp1.exp_type == EXP_TYPE_TVALUE)
     {
-        fprintf(ir, "int %s = %d;\n", exp1.var, exp2.literal);
+        fprintf(ir, "int %s = ", exp1.var);
     }
-    else if (exp2.exp_type == EXP_TYPE_VAR)
+    else if(exp1.exp_type == EXP_TYPE_ARR)
     {
-        fprintf(ir, "int %s = %s;\n", exp1.var, exp2.var);
-    }
-    else if (exp2.exp_type == EXP_TYPE_TVALUE){
-        fprintf(ir, "int %s = %s;\n", exp1.var, exp2.var);
+        fprintf(ir, "%s[%d] = ", exp1.var, exp1.literal);
     }
 
+
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d;\n", exp2.literal);
+    }
+    else if (exp2.exp_type == EXP_TYPE_VAR || exp2.exp_type == EXP_TYPE_TVALUE)
+    {
+        fprintf(ir, "%s;\n", exp2.var);
+    }
     
     return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
 }
@@ -80,7 +87,48 @@ expression_t lesserEquals(int line, int col, expression_t exp1, expression_t exp
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
+
+    fprintf(ir, "int t%d = ", counter);
+
+    if(exp1.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d", exp1.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s", exp1.var);
+    }
+
+    fprintf(ir, " <= ");
+
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d;\n", exp2.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s;\n", exp2.var);
+    }
+
+    /*char tmp4[10];
+    sprintf(tmp4, "t%d", counter++);
+    
+
+    char *tmp = tmp4;
+
+    fprintf(ir, "   %s %s   ", tmp4, tmp);*/
+
+
+    char tmp5[10];
+
+    sprintf(tmp5, "t%d", counter);
+
+    char *tmp = "test";
+
+    fprintf(ir, "%s %p", tmp, &tmp);
+
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+
 }
 
 
@@ -230,12 +278,15 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
     return newParamList;
 }
 
+
 expression_t evalArray(int line, int col, char *name, expression_t exp){
+
+
+    //maybe has to be changed back, but not sure yet...
+    //problem is: can not know if arr[0] = 2 or t0 = arr[0]
     
-    if(checkForInt(line, col, exp))
-    {
-        
-    }
+    if(checkForInt(line, col, exp));
+
 
     if(exp.exp_type == EXP_TYPE_LITERAL)
     {
@@ -254,3 +305,56 @@ expression_t evalArray(int line, int col, char *name, expression_t exp){
 
 }
 
+
+void ifStart(int line, int col, expression_t exp)
+{
+    if(checkForInt(line, col, exp));
+
+    fprintf(ir, "   %d   ", exp.exp_type);
+
+
+    if(exp.exp_type == EXP_TYPE_TVALUE)
+    {
+        fprintf(ir, "tvalue var: %s %p\n", exp.var, &exp.var);
+    }
+    
+
+    if(exp.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "IF(%d)GOTO\n", exp.literal);
+    }
+    else
+    {
+        fprintf(ir, "IF(%s)GOTO\n", exp.var);
+    }
+    
+
+
+
+}
+
+
+void ifEnd(int line, int col)
+{
+
+
+
+
+}
+
+
+void elseStart(int line, int col)
+{
+
+
+
+}
+
+
+void elseEnd(int line, int col)
+{
+
+
+
+
+}

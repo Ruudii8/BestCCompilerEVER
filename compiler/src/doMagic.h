@@ -29,10 +29,14 @@ expression_t divide(int line, int col, expression_t exp1, expression_t exp2);
 expression_t unaryMinus(int line, int col, expression_t exp);
 expression_t unaryPlus(int line, int col, expression_t exp);
 expression_t evalArray(int line, int col, char *name, expression_t exp);
+char * twoExpHandler(expression_t exp1, expression_t exp2, char operand);
+char * oneExpHandler(expression_t exp1, char operand);
+//void evalIf();
+//void evalElse();
+//void while
+//call function
+//define function
+//declare function
+//return
 
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp);
-
-void ifStart(int line, int col, expression_t exp);
-void ifEnd(int line, int col);
-void elseStart(int line, int col);
-void elseEnd(int line, int col);

@@ -31,3 +31,8 @@ expression_t unaryPlus(int line, int col, expression_t exp);
 expression_t evalArray(int line, int col, char *name, expression_t exp);
 
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp);
+
+void ifStart(int line, int col, expression_t exp);
+void ifEnd(int line, int col);
+void elseStart(int line, int col);
+void elseEnd(int line, int col);

@@ -40,3 +40,8 @@ char * oneExpHandler(expression_t exp1, char operand);
 //return
 
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp);
+
+void ifStart(int line, int col, expression_t exp);
+void ifEnd(int line, int col, int label);
+void elseStart(int line, int col);
+void elseEnd(int line, int col);

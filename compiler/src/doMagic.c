@@ -92,10 +92,11 @@ expression_t lesserEquals(int line, int col, expression_t exp1, expression_t exp
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    
+   
     char *tmp = twoExpHandler(exp1, exp2, '<=');
 
     return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+
 }
 
 
@@ -288,27 +289,7 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
     return newParamList;
 }
 
-expression_t evalArray(int line, int col, char *name, expression_t exp){
-    
-    if(checkForInt(line, col, exp))
-    {
-        
-    }
-
     if(exp.exp_type == EXP_TYPE_LITERAL)
     {
-        //fprintf(ir, "int t%d = %s[%d];\n", counter, name, exp.literal);
+        fprintf(ir, "IF(%d)GOTO \n", exp.literal);
     }
-    else if(exp.exp_type == EXP_TYPE_VAR)
-    {
-        //fprintf(ir, "int t%d = %s[%s];\n", counter, name, exp.var);
-    }
-
-    char tmp3[10];
-    sprintf(tmp3, "t%d", counter++);
-
-
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp3, NULL, NULL};
-
-}
-

@@ -24,6 +24,7 @@
   var_tmp_t var_tmp;
   expression_t exp;
   funcCallParamList_t *paramList;
+  int label;
 }
  
 // Verbose error messages
@@ -78,9 +79,11 @@
 %type <var_tmp> identifier_declaration
 %type <type> variable_declaration
 %type <exp> expression
+%type <exp> jump_expression
 %type <exp> primary
 %type <exp> function_call
 %type <paramList> function_call_parameters
+%type <label> label
 
 %right ASSIGN
 %left LOGICAL_OR
@@ -169,22 +172,22 @@ stmt_block
      ;
 	
 stmt_conditional
-     : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifStart(@1.first_line, @1.first_column, $3);}
+     : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifEnd(@1.first_line, @1.first_column, 3);}
      | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
      ;
 									
 stmt_loop
-     : WHILE marker PARA_OPEN jump_expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
-     | DO marker stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {checkForInt(@1.first_line, @1.first_column, $5);}
+     : WHILE label PARA_OPEN jump_expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $4);}
+     | DO label stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {checkForInt(@1.first_line, @1.first_column, $6);}
      ;
 
 jump_expression
-     : expression {}
+     : expression {$$ = $1; ifStart(@1.first_line, @1.first_column, $1);}
+     ;
 
-
-marker
-     : %empty {$$ = marker}
-
+label
+     : %empty {$$ = 0;}
+     ;
 									
 expression
      : expression ASSIGN expression {$$ = assign(@1.first_line, @1.first_column, $1, $3);}

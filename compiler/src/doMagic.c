@@ -119,15 +119,8 @@ expression_t lesserEquals(int line, int col, expression_t exp1, expression_t exp
     fprintf(ir, "   %s %s   ", tmp4, tmp);*/
 
 
-    char tmp5[10];
 
-    sprintf(tmp5, "t%d", counter);
-
-    char *tmp = "test";
-
-    fprintf(ir, "%s %p", tmp, &tmp);
-
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, "test", NULL, NULL};
 
 }
 
@@ -310,18 +303,11 @@ void ifStart(int line, int col, expression_t exp)
 {
     if(checkForInt(line, col, exp));
 
-    fprintf(ir, "   %d   ", exp.exp_type);
 
-
-    if(exp.exp_type == EXP_TYPE_TVALUE)
-    {
-        fprintf(ir, "tvalue var: %s %p\n", exp.var, &exp.var);
-    }
-    
 
     if(exp.exp_type == EXP_TYPE_LITERAL)
     {
-        fprintf(ir, "IF(%d)GOTO\n", exp.literal);
+        fprintf(ir, "IF(%d)GOTO \n", exp.literal);
     }
     else
     {
@@ -334,9 +320,9 @@ void ifStart(int line, int col, expression_t exp)
 }
 
 
-void ifEnd(int line, int col)
+void ifEnd(int line, int col, int label)
 {
-
+    fprintf(ir, "l%d:\n", label);
 
 
 

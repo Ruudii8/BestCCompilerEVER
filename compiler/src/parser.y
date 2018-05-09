@@ -162,8 +162,8 @@ stmt
      | expression SEMICOLON
      | stmt_conditional
      | stmt_loop
-     | RETURN expression SEMICOLON {checkReturnInt(@1.first_line, @1.first_column, $2);}
-     | RETURN SEMICOLON {checkReturnVoid(@1.first_line, @2.first_column);}
+     | RETURN expression SEMICOLON {returnInt(@1.first_line, @1.first_column, $2);}
+     | RETURN SEMICOLON {returnVoid(@1.first_line, @2.first_column);}
      | SEMICOLON /* empty statement */
      ;
 
@@ -173,7 +173,7 @@ stmt_block
 	
 stmt_conditional
      : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifEnd(@1.first_line, @1.first_column, $3);}
-     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE stmt {/*checkForInt(@1.first_line, @1.first_column, $3);*/}
+     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE {ifEnd(@1.first_line, @1.first_column, $3);} stmt {elseEnd(@1.first_line, @1.first_column, 4);}
      ;
 									
 stmt_loop
@@ -186,7 +186,7 @@ jump_expression
      ;
 
 label
-     : %empty {$$ = 0;}
+     : %empty {$$ = 1;}
      ;
 									
 expression

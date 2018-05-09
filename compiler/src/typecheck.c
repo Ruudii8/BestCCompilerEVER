@@ -256,13 +256,8 @@ int checkIfAssignable(int line, int col, expression_t exp)
 
 void checkReturnInt(int line, int col, expression_t exp)
 {
-    //TODO check if exp is an int
-    if(!checkForInt(line, col, exp))
-    {
 
-    }
-
-
+    if(!checkForInt(line, col, exp));
 
     if(symboltable.currentFunction->returnType != TYPE_INT)
     {

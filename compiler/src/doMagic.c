@@ -271,7 +271,6 @@ char * twoExpHandler(expression_t exp1, expression_t exp2, char operand){
 }
 
 
-
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp)
 {
 
@@ -289,7 +288,76 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
     return newParamList;
 }
 
+
+expression_t evalArray(int line, int col, char *name, expression_t exp){
+
+
+    //maybe has to be changed back, but not sure yet...
+    //problem is: can not know if arr[0] = 2 or t0 = arr[0]
+    
+    if(checkForInt(line, col, exp));
+
+
+    if(exp.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "int t%d = %s[%d];\n", counter, name, exp.literal);
+    }
+    else if(exp.exp_type == EXP_TYPE_VAR)
+    {
+        fprintf(ir, "int t%d = %s[%s];\n", counter, name, exp.var);
+    }
+
+    char tmp3[10];
+    sprintf(tmp3, "t%d", counter++);
+
+
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp3, NULL, NULL};
+
+}
+
+
+void ifStart(int line, int col, expression_t exp)
+{
+    if(checkForInt(line, col, exp));
+
+
+
     if(exp.exp_type == EXP_TYPE_LITERAL)
     {
         fprintf(ir, "IF(%d)GOTO \n", exp.literal);
     }
+    else
+    {
+        fprintf(ir, "IF(%s)GOTO\n", exp.var);
+    }
+    
+
+
+
+}
+
+
+void ifEnd(int line, int col, int label)
+{
+    fprintf(ir, "l%d:\n", label);
+
+
+
+}
+
+
+void elseStart(int line, int col)
+{
+
+
+
+}
+
+
+void elseEnd(int line, int col)
+{
+
+
+
+
+}

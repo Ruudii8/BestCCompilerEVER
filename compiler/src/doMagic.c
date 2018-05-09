@@ -1,6 +1,7 @@
 #include "doMagic.h"
 
-int counter = 0;
+int t_counter = 0;
+int l_counter = 0;
 
 expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
 {
@@ -10,15 +11,20 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
     //if type is literal print value, else print name -- Array needs to be handled different
     if(exp2.exp_type == EXP_TYPE_LITERAL)
     {
-        fprintf(ir, "aint %s = %d;\n", exp1.var, exp2.literal);
+        fprintf(ir, "\tint %s = %d;\n", exp1.var, exp2.literal);
     }
-    else if (exp2.exp_type == EXP_TYPE_VAR )
+    else
     {
-        fprintf(ir, "aint %s = %s;\n", exp1.var, exp2.var);
+        if (exp2.exp_type == EXP_TYPE_ARR)
+        {
+            exp2 = evalArray(line, col, exp2);
+        }
+        fprintf(ir, "\tint %s = %s;\n", exp1.var, exp2.var);
     }
 
+
     
-    return (expression_t) {EXP_TYPE_LITERAL, 1, NULL, NULL, NULL};
+    return exp2;
 }
 
 
@@ -92,12 +98,35 @@ expression_t lesserEquals(int line, int col, expression_t exp1, expression_t exp
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-   
-    char *tmp = twoExpHandler(exp1, exp2, '<=');
+
+    if(exp1.exp_type == EXP_TYPE_ARR)
+    {
+        exp1 = evalArray(line, col, exp1);
+    }
+
+    if(exp2.exp_type == EXP_TYPE_ARR)
+    {
+        exp2 = evalArray(line, col, exp2);
+    }
+
+
+    fprintf(ir, "\tIF (%s <= %s) GOTO l%d\n", exp1.var, exp2.var, l_counter++);
+    fprintf(ir, "\tint t%d = 0;\n", t_counter);
+    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "l%d:\n", l_counter-2);
+    fprintf(ir, "\tint t%d = 1;\n", t_counter);
+    fprintf(ir, "l%d:\n", l_counter-1);
+
+    char *tmp = malloc( sizeof(char) * (3 + 1 ) );
+    sprintf(tmp, "t%d", t_counter++);
+
 
     return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
 
 }
+
+
+
 
 
 expression_t greaterEquals(int line, int col, expression_t exp1, expression_t exp2)
@@ -214,18 +243,18 @@ char * oneExpHandler(expression_t exp1, char operand){
     //First expression to intermediate variable
     //Our logic always creates an intermediate
     if(exp1.exp_type == EXP_TYPE_LITERAL){
-        sprintf(tmp1, "t%d", counter);
-        fprintf(ir, "int t%d = %d\n", counter++, exp1.literal);
+        sprintf(tmp1, "t%d", t_counter);
+        fprintf(ir, "int t%d = %d\n", t_counter++, exp1.literal);
     }
     else if (exp1.exp_type == EXP_TYPE_VAR || exp1.exp_type == EXP_TYPE_TVALUE)
     {
-        sprintf(tmp1, "t%d", counter);
-        fprintf(ir, "int t%d = %s\n", counter++, exp1.var);
+        sprintf(tmp1, "t%d", t_counter);
+        fprintf(ir, "int t%d = %s\n", t_counter++, exp1.var);
     }
 
     //temp char for output and return parameter
     char *tmp = malloc( sizeof(char) * (3 + 1 ) );
-    sprintf(tmp, "t%d", counter++);
+    sprintf(tmp, "t%d", t_counter++);
 
     fprintf(ir, "int %s %c %s;\n", tmp, operand, tmp1);
 
@@ -240,32 +269,32 @@ char * twoExpHandler(expression_t exp1, expression_t exp2, char operand){
     //First expression to intermediate variable
     //Our logic always creates an intermediate
     if(exp1.exp_type == EXP_TYPE_LITERAL){
-        sprintf(tmp1, "t%d", counter);
-        fprintf(ir, "int t%d = %d\n", counter++, exp1.literal);
+        sprintf(tmp1, "t%d", t_counter);
+        fprintf(ir, "\tint t%d = %d\n", t_counter++, exp1.literal);
     }
     else if (exp1.exp_type == EXP_TYPE_VAR || exp1.exp_type == EXP_TYPE_TVALUE)
     {
-        sprintf(tmp1, "t%d", counter);
-        fprintf(ir, "int t%d = %s\n", counter++, exp1.var);
+        sprintf(tmp1, "t%d", t_counter);
+        fprintf(ir, "\tint t%d = %s\n", t_counter++, exp1.var);
     }
 
     //2nd expression
     if(exp2.exp_type == EXP_TYPE_LITERAL){
-        sprintf(tmp2, "t%d", counter);
-        fprintf(ir, "int t%d = %d\n", counter++, exp2.literal);
+        sprintf(tmp2, "t%d", t_counter);
+        fprintf(ir, "\tint t%d = %d\n", t_counter++, exp2.literal);
     }
     else if (exp2.exp_type == EXP_TYPE_VAR || exp2.exp_type == EXP_TYPE_TVALUE)
     {
-        sprintf(tmp2, "t%d", counter);
-        fprintf(ir, "int t%d = %s\n", counter++, exp2.var);
+        sprintf(tmp2, "t%d", t_counter);
+        fprintf(ir, "\tint t%d = %s\n", t_counter++, exp2.var);
     }
 
 
     //temp char for output and return parameter
     char *tmp = malloc( sizeof(char) * (3 + 1 ) );
-    sprintf(tmp, "t%d", counter++);
+    sprintf(tmp, "t%d", t_counter++);
 
-    fprintf(ir, "int %s = %s %c %s;\n", tmp, tmp1, operand, tmp2);
+    fprintf(ir, "\tint %s = %s %c %s;\n", tmp, tmp1, operand, tmp2);
 
     return tmp;
 }
@@ -289,50 +318,41 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
 }
 
 
-expression_t evalArray(int line, int col, char *name, expression_t exp){
-
-
-    //maybe has to be changed back, but not sure yet...
-    //problem is: can not know if arr[0] = 2 or t0 = arr[0]
-    
-    if(checkForInt(line, col, exp));
-
-
-    if(exp.exp_type == EXP_TYPE_LITERAL)
-    {
-        fprintf(ir, "int t%d = %s[%d];\n", counter, name, exp.literal);
-    }
-    else if(exp.exp_type == EXP_TYPE_VAR)
-    {
-        fprintf(ir, "int t%d = %s[%s];\n", counter, name, exp.var);
-    }
-
-    char tmp3[10];
-    sprintf(tmp3, "t%d", counter++);
-
-
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp3, NULL, NULL};
-
-}
-
-
-void ifStart(int line, int col, expression_t exp)
+expression_t evalArray(int line, int col, expression_t exp)
 {
+
     if(checkForInt(line, col, exp));
 
-
-
-    if(exp.exp_type == EXP_TYPE_LITERAL)
+    if(exp.exp->exp_type == EXP_TYPE_LITERAL)
     {
-        fprintf(ir, "IF(%d)GOTO \n", exp.literal);
+        fprintf(ir, "\tint t%d = %s[%d];\n", t_counter, exp.var, exp.exp->literal);
     }
     else
     {
-        fprintf(ir, "IF(%s)GOTO\n", exp.var);
+        fprintf(ir, "\tint t%d = %s[%s];\n", t_counter, exp.var, exp.exp->var);
     }
-    
+
+    char *tmp = malloc( sizeof(char) * (3 + 1 ) );
+    sprintf(tmp, "t%d", t_counter++);
+
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+}
 
 
+int ifStart(int line, int col, expression_t exp)
+{
+
+    if(exp.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "\tIF (%d == 0) GOTO l%d\n",exp.literal, l_counter++);
+    }
+    else
+    {
+        fprintf(ir, "\tIF (%s == 0) GOTO l%d\n",exp.var, l_counter++);
+    }
+
+
+    return l_counter - 1;
 
 }
 

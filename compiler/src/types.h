@@ -67,7 +67,7 @@ typedef struct
 } symboltable_t;
 
 
-struct exp
+typedef struct exp
 {
     int exp_type;
     int literal;
@@ -75,9 +75,7 @@ struct exp
     struct funcCallParamList *paramList;
     struct exp *exp;
 
-};
-
-typedef struct exp expression_t;
+}expression_t;
 
 
 struct funcCallParamList

@@ -79,7 +79,7 @@
 %type <var_tmp> identifier_declaration
 %type <type> variable_declaration
 %type <exp> expression
-%type <exp> jump_expression
+%type <label> jump_expression
 %type <exp> primary
 %type <exp> function_call
 %type <paramList> function_call_parameters
@@ -172,17 +172,17 @@ stmt_block
      ;
 	
 stmt_conditional
-     : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifEnd(@1.first_line, @1.first_column, 3);}
-     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE stmt {checkForInt(@1.first_line, @1.first_column, $3);}
+     : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifEnd(@1.first_line, @1.first_column, $3);}
+     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE stmt {/*checkForInt(@1.first_line, @1.first_column, $3);*/}
      ;
 									
 stmt_loop
-     : WHILE label PARA_OPEN jump_expression PARA_CLOSE stmt {checkForInt(@1.first_line, @1.first_column, $4);}
-     | DO label stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {checkForInt(@1.first_line, @1.first_column, $6);}
+     : WHILE label PARA_OPEN jump_expression PARA_CLOSE stmt {/*checkForInt(@1.first_line, @1.first_column, $4);*/}
+     | DO label stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {/*checkForInt(@1.first_line, @1.first_column, $6);*/}
      ;
 
 jump_expression
-     : expression {$$ = $1; ifStart(@1.first_line, @1.first_column, $1);}
+     : expression {$$ = ifStart(@1.first_line, @1.first_column, $1);}
      ;
 
 label
@@ -208,7 +208,7 @@ expression
      | expression DIV expression {$$ = divide(@1.first_line, @1.first_column, $1, $3);}
      | MINUS expression %prec UNARY_MINUS {$$ = unaryMinus(@1.first_line, @1.first_column, $2);}
      | PLUS expression %prec UNARY_PLUS {$$ = unaryPlus(@1.first_line, @1.first_column, $2);}
-     | ID BRACKET_OPEN primary BRACKET_CLOSE {$$ = evalArray(@1.first_line, @1.first_column, $1, $3);}
+     | ID BRACKET_OPEN primary BRACKET_CLOSE {expression_t *e = malloc(sizeof(expression_t)); *e = $3;$$ =(expression_t){EXP_TYPE_ARR, NULL, $1, NULL, e};}
      | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
      | function_call {checkFuncCallParams(@1.first_line, @1.first_column, $1); $$ = $1; }
      | primary {$$ = $1;}

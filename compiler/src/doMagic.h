@@ -51,8 +51,12 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
 int ifStart(int line, int col, expression_t exp);
 void ifEnd(int line, int col, int label);
 void elseEnd(int line, int col, int label);
+void whileEnd(int line, int col, int jump, int label);
 
-int createGoto(int line, int col);
+int createJump();
+void createMainJump();
+int createLabel();
+void createFunctionLabel(char *label);
 
 void returnVoid(int line, int col);
 void returnInt(int line, int col, expression_t exp);

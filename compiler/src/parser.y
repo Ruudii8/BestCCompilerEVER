@@ -84,6 +84,7 @@
 %type <exp> function_call
 %type <paramList> function_call_parameters
 %type <label> label
+%type <label> jump
 
 %right ASSIGN
 %left LOGICAL_OR
@@ -102,7 +103,7 @@
 %%
 
 program
-     : {init();} program_element_list {printAll(@2.last_line, @2.last_column);}
+     : {init(); createMainJump();} program_element_list {printAll(@2.last_line, @2.last_column);}
      ;
 
 program_element_list
@@ -133,8 +134,8 @@ identifier_declaration
      ;
 
 function_definition
-     : type ID PARA_OPEN PARA_CLOSE {defineFunction(@1.first_line, @1.first_column, $2, $1, NULL);} BRACE_OPEN stmt_list BRACE_CLOSE {endFunctionScope(@1.first_line, @1.first_column);}
-     | type ID PARA_OPEN function_parameter_list PARA_CLOSE {defineFunction(@1.first_line, @1.first_column, $2, $1, returnParameters());} BRACE_OPEN stmt_list BRACE_CLOSE {endFunctionScope(@1.first_line, @1.first_column);}
+     : type ID PARA_OPEN PARA_CLOSE {defineFunction(@1.first_line, @1.first_column, $2, $1, NULL); createFunctionLabel($2);} BRACE_OPEN stmt_list BRACE_CLOSE {endFunctionScope(@1.first_line, @1.first_column);}
+     | type ID PARA_OPEN function_parameter_list PARA_CLOSE {defineFunction(@1.first_line, @1.first_column, $2, $1, returnParameters()); createFunctionLabel($2);} BRACE_OPEN stmt_list BRACE_CLOSE {endFunctionScope(@1.first_line, @1.first_column);}
      ;
 
 function_declaration
@@ -173,12 +174,12 @@ stmt_block
 	
 stmt_conditional
      : IF PARA_OPEN jump_expression PARA_CLOSE stmt {ifEnd(@1.first_line, @1.first_column, $3);}
-     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE {ifEnd(@1.first_line, @1.first_column, $3);} stmt {elseEnd(@1.first_line, @1.first_column, 4);}
+     | IF PARA_OPEN jump_expression PARA_CLOSE stmt ELSE jump {ifEnd(@1.first_line, @1.first_column, $3);} stmt {elseEnd(@1.first_line, @1.first_column, $7);}
      ;
 									
 stmt_loop
-     : WHILE label PARA_OPEN jump_expression PARA_CLOSE stmt {/*checkForInt(@1.first_line, @1.first_column, $4);*/}
-     | DO label stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {/*checkForInt(@1.first_line, @1.first_column, $6);*/}
+     : WHILE label PARA_OPEN jump_expression PARA_CLOSE stmt {whileEnd(@1.first_line, @1.first_column, $2, $4);}
+     | DO label stmt WHILE PARA_OPEN jump_expression PARA_CLOSE SEMICOLON {whileEnd(@1.first_line, @1.first_column, $2, $6);}
      ;
 
 jump_expression
@@ -186,8 +187,11 @@ jump_expression
      ;
 
 label
-     : %empty {$$ = 1;}
+     : %empty {$$ = createLabel();}
      ;
+
+jump
+     : %empty {$$ = createJump();}
 									
 expression
      : expression ASSIGN expression {$$ = assign(@1.first_line, @1.first_column, $1, $3);}

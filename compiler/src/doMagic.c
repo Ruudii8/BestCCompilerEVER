@@ -32,7 +32,46 @@ expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2)
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
 
-    char *tmp = twoExpHandler(exp1, exp2, '||');
+    if(exp1.exp_type == EXP_TYPE_ARR)
+    {
+        exp1 = evalArray(line, col, exp1);
+    }
+
+    if(exp2.exp_type == EXP_TYPE_ARR)
+    {
+        exp2 = evalArray(line, col, exp2);
+    }
+
+    fprintf(ir, "\tIF (");
+    if(exp1.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d != 0", exp1.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s != 0", exp1.var);
+    }
+    fprintf(ir, "\t) GOTO l%d\n", l_counter);
+
+    fprintf(ir, "\tIF (");
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d != 0", exp2.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s != 0", exp2.var);
+    }
+    fprintf(ir, "\t) GOTO l%d\n", l_counter++);
+
+    fprintf(ir, "\tint t%d = 0;\n", t_counter);
+    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "l%d:\n", l_counter-2);
+    fprintf(ir, "\tint t%d = 1;\n", t_counter);
+    fprintf(ir, "l%d:\n", l_counter-1);
+
+    char *tmp = malloc( sizeof(char) * (3 + 1 ) );
+    sprintf(tmp, "t%d", t_counter++);
 
     return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
 }
@@ -40,10 +79,50 @@ expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2)
 
 expression_t logicalAnd(int line, int col, expression_t exp1, expression_t exp2)
 {
+  
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    
-    char *tmp = twoExpHandler(exp1, exp2, '&&');
+
+    if(exp1.exp_type == EXP_TYPE_ARR)
+    {
+        exp1 = evalArray(line, col, exp1);
+    }
+
+    if(exp2.exp_type == EXP_TYPE_ARR)
+    {
+        exp2 = evalArray(line, col, exp2);
+    }
+
+    fprintf(ir, "\tIF (");
+    if(exp1.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d == 0", exp1.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s == 0", exp1.var);
+    }
+    fprintf(ir, "\t) GOTO l%d\n", l_counter);
+
+    fprintf(ir, "\tIF (");
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d == 0", exp2.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s == 0", exp2.var);
+    }
+    fprintf(ir, "\t) GOTO l%d\n", l_counter++);
+
+    fprintf(ir, "\tint t%d = 1;\n", t_counter);
+    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "l%d:\n", l_counter-2);
+    fprintf(ir, "\tint t%d = 0;\n", t_counter);
+    fprintf(ir, "l%d:\n", l_counter-1);
+
+    char *tmp = malloc( sizeof(char) * (3 + 1 ) );
+    sprintf(tmp, "t%d", t_counter++);
 
     return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
 }
@@ -53,7 +132,30 @@ expression_t logicalNot(int line, int col, expression_t exp)
 {
     checkForInt(line, col, exp);
 
-    char *tmp = oneExpHandler(exp, '!');
+    if(exp.exp_type == EXP_TYPE_ARR)
+    {
+        exp = evalArray(line, col, exp);
+    }
+
+    fprintf(ir, "\tIF (");
+    if(exp.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d == 0", exp.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s == 0", exp.var);
+    }
+    fprintf(ir, "\t) GOTO l%d\n", l_counter);
+
+    fprintf(ir, "\tint t%d = 0;\n", t_counter);
+    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "l%d:\n", l_counter-2);
+    fprintf(ir, "\tint t%d = 1;\n", t_counter);
+    fprintf(ir, "l%d:\n", l_counter-1);
+
+    char *tmp = malloc( sizeof(char) * (3 + 1 ) );
+    sprintf(tmp, "t%d", t_counter++);
 
     return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
 }
@@ -292,7 +394,6 @@ expression_t relOp(int line, int col, expression_t exp1, expression_t exp2, char
 }
 
 
-
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp)
 {
 
@@ -400,11 +501,37 @@ void elseEnd(int line, int col, int label)
 }
 
 
-int createGoto(int line, int col)
+void whileEnd(int line, int col, int jump, int label)
 {
-    fprintf(ir, "\tGOTO l%d;", l_counter++);
+    fprintf(ir, "\tGOTO l%d;\n", jump);
+    fprintf(ir, "l%d:\n", label);
+}
+
+
+int createJump()
+{
+    fprintf(ir, "\tGOTO l%d;\n", l_counter++);
 
     return l_counter-1;
+}
+
+
+void createMainJump()
+{
+    fprintf(ir, "\tGOTO main;\n");
+}
+
+
+int createLabel()
+{
+    fprintf(ir, "l%d:\n", l_counter++);
+    return l_counter-1;
+}
+
+
+void createFunctionLabel(char *label)
+{
+    fprintf(ir, "%s:\n", label);
 }
 
 

@@ -286,18 +286,12 @@ int main (int argc, char *argv[]) {
     yyparse();
   }
 
-
   fclose(ir);
-  
-
-
-  rm_cleanup_resources(&resource_mgr);
-
-
 
   if(log.errorCount>0)
   {
     printf("failed");
+    remove(cc_options.ir_file);
     return 1;
   }
   else
@@ -306,6 +300,8 @@ int main (int argc, char *argv[]) {
     return 0;
   }
 
+
+  rm_cleanup_resources(&resource_mgr);
 
 }
 

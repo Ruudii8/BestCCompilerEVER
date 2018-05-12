@@ -160,7 +160,7 @@ stmt_list
 stmt
      : stmt_block
      | variable_declaration SEMICOLON
-     | expression SEMICOLON
+     | expression SEMICOLON {eval(@1.first_line, @1.first_column, $1);}
      | stmt_conditional
      | stmt_loop
      | RETURN expression SEMICOLON {returnInt(@1.first_line, @1.first_column, $2);}
@@ -212,7 +212,7 @@ expression
      | expression DIV expression {$$ = divide(@1.first_line, @1.first_column, $1, $3);}
      | MINUS expression %prec UNARY_MINUS {$$ = unaryMinus(@1.first_line, @1.first_column, $2);}
      | PLUS expression %prec UNARY_PLUS {$$ = unaryPlus(@1.first_line, @1.first_column, $2);}
-     | ID BRACKET_OPEN primary BRACKET_CLOSE {expression_t *e = malloc(sizeof(expression_t)); *e = $3;$$ =(expression_t){EXP_TYPE_ARR, NULL, $1, NULL, e};}
+     | ID BRACKET_OPEN primary BRACKET_CLOSE {expression_t *e = malloc(sizeof(expression_t)); *e = $3;$$ = (expression_t){EXP_TYPE_ARR, NULL, $1, NULL, e};}
      | PARA_OPEN expression PARA_CLOSE {$$ = $2;}
      | function_call {checkFuncCallParams(@1.first_line, @1.first_column, $1); $$ = $1; }
      | primary {$$ = $1;}

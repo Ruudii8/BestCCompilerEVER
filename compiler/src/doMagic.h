@@ -30,12 +30,12 @@ expression_t unaryMinus(int line, int col, expression_t exp);
 expression_t unaryPlus(int line, int col, expression_t exp);
 
 
-
+void eval(int line, int col, expression_t exp);
 expression_t evalArray(int line, int col, expression_t exp);
 expression_t evalFunc(int line, int col, expression_t exp);
 
 
-char * twoExpHandler(expression_t exp1, expression_t exp2, char operand);
+expression_t twoExpHandler(int line, int col, expression_t exp1, expression_t exp2, char* operand);
 char * oneExpHandler(expression_t exp1, char operand);
 expression_t relOp(int line, int col, expression_t exp1, expression_t exp2, char* operand);
 //void evalIf();

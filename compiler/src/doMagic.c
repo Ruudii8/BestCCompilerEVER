@@ -19,8 +19,14 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
         {
             exp2 = evalArray(line, col, exp2);
         }
+        else if(exp2.exp_type == EXP_TYPE_FUNC)
+        {
+            exp2 = evalFunc(line, col, exp2);
+        }
         fprintf(ir, "\tint %s = %s;\n", exp1.var, exp2.var);
     }
+
+    //TODO return type? or change eval function?
     
     return exp2;
 }
@@ -51,7 +57,7 @@ expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2)
     {
         fprintf(ir, "%s != 0", exp1.var);
     }
-    fprintf(ir, "\t) GOTO l%d\n", l_counter);
+    fprintf(ir, "\t) GOTO l%d;\n", l_counter);
 
     fprintf(ir, "\tIF (");
     if(exp2.exp_type == EXP_TYPE_LITERAL)
@@ -62,10 +68,10 @@ expression_t logicalOr(int line, int col, expression_t exp1, expression_t exp2)
     {
         fprintf(ir, "%s != 0", exp2.var);
     }
-    fprintf(ir, "\t) GOTO l%d\n", l_counter++);
+    fprintf(ir, "\t) GOTO l%d;\n", l_counter++);
 
     fprintf(ir, "\tint t%d = 0;\n", t_counter);
-    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "\tGOTO l%d;\n", l_counter++);
     fprintf(ir, "l%d:\n", l_counter-2);
     fprintf(ir, "\tint t%d = 1;\n", t_counter);
     fprintf(ir, "l%d:\n", l_counter-1);
@@ -102,7 +108,7 @@ expression_t logicalAnd(int line, int col, expression_t exp1, expression_t exp2)
     {
         fprintf(ir, "%s == 0", exp1.var);
     }
-    fprintf(ir, "\t) GOTO l%d\n", l_counter);
+    fprintf(ir, "\t) GOTO l%d;\n", l_counter);
 
     fprintf(ir, "\tIF (");
     if(exp2.exp_type == EXP_TYPE_LITERAL)
@@ -113,10 +119,10 @@ expression_t logicalAnd(int line, int col, expression_t exp1, expression_t exp2)
     {
         fprintf(ir, "%s == 0", exp2.var);
     }
-    fprintf(ir, "\t) GOTO l%d\n", l_counter++);
+    fprintf(ir, "\t) GOTO l%d;\n", l_counter++);
 
     fprintf(ir, "\tint t%d = 1;\n", t_counter);
-    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "\tGOTO l%d;\n", l_counter++);
     fprintf(ir, "l%d:\n", l_counter-2);
     fprintf(ir, "\tint t%d = 0;\n", t_counter);
     fprintf(ir, "l%d:\n", l_counter-1);
@@ -149,7 +155,7 @@ expression_t logicalNot(int line, int col, expression_t exp)
     fprintf(ir, "\t) GOTO l%d\n", l_counter);
 
     fprintf(ir, "\tint t%d = 0;\n", t_counter);
-    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "\tGOTO l%d;\n", l_counter++);
     fprintf(ir, "l%d:\n", l_counter-2);
     fprintf(ir, "\tint t%d = 1;\n", t_counter);
     fprintf(ir, "l%d:\n", l_counter-1);
@@ -201,10 +207,8 @@ expression_t plus(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-
-    char *tmp = twoExpHandler(exp1, exp2, '+');
     
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp1, exp2, "+");
 }
 
 
@@ -212,10 +216,8 @@ expression_t minus(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    
-    char *tmp = twoExpHandler(exp1, exp2, '-');
 
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp1, exp2, "-");
 }
 
 
@@ -223,10 +225,8 @@ expression_t shiftLeft(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    
-    char *tmp = twoExpHandler(exp1, exp2, '<<');
 
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp1, exp2, "<<");
 }
 
 
@@ -234,10 +234,8 @@ expression_t shiftRight(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    
-    char *tmp = twoExpHandler(exp1, exp2, '>>');
 
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp1, exp2, ">>");
 }
 
 
@@ -246,9 +244,7 @@ expression_t multiply(int line, int col, expression_t exp1, expression_t exp2)
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
 
-    char *tmp = twoExpHandler(exp1, exp2, '*');
-
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp1, exp2, "*");
 }
 
 
@@ -256,9 +252,8 @@ expression_t divide(int line, int col, expression_t exp1, expression_t exp2)
 {
     checkForInt(line, col, exp1);
     checkForInt(line, col, exp2);
-    char *tmp = twoExpHandler(exp1, exp2, '/');
 
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp1, exp2, "/");
 }
 
 
@@ -266,9 +261,9 @@ expression_t unaryMinus(int line, int col, expression_t exp)
 {
     checkForInt(line, col, exp);
 
-    char *tmp = oneExpHandler(exp, '--');
+    expression_t exp_tmp = (expression_t) {EXP_TYPE_LITERAL, 0, NULL, NULL, NULL};
 
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return (expression_t)twoExpHandler(line, col, exp_tmp, exp, "-");
 }
 
 
@@ -276,9 +271,7 @@ expression_t unaryPlus(int line, int col, expression_t exp)
 {
     checkForInt(line, col, exp);
 
-    char *tmp = oneExpHandler(exp, '++');
-
-    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
+    return exp;
 }
 
 char * oneExpHandler(expression_t exp1, char operand){
@@ -306,42 +299,58 @@ char * oneExpHandler(expression_t exp1, char operand){
     return tmp;
 }
 
-char * twoExpHandler(expression_t exp1, expression_t exp2, char operand){
-    //temps for later use -> literal or varname in tmp
-    char tmp1[255];
-    char tmp2[255];
+expression_t twoExpHandler(int line, int col, expression_t exp1, expression_t exp2, char* operand)
+{
 
-    //First expression to intermediate variable
-    //Our logic always creates an intermediate
-    if(exp1.exp_type == EXP_TYPE_LITERAL){
-        sprintf(tmp1, "t%d", t_counter);
-        fprintf(ir, "\tint t%d = %d\n", t_counter++, exp1.literal);
-    }
-    else if (exp1.exp_type == EXP_TYPE_VAR || exp1.exp_type == EXP_TYPE_TVALUE)
+
+    checkForInt(line, col, exp1);
+    checkForInt(line, col, exp2);
+
+
+    if (exp1.exp_type == EXP_TYPE_ARR)
     {
-        sprintf(tmp1, "t%d", t_counter);
-        fprintf(ir, "\tint t%d = %s\n", t_counter++, exp1.var);
+        exp1 = evalArray(line, col, exp1);
     }
-
-    //2nd expression
-    if(exp2.exp_type == EXP_TYPE_LITERAL){
-        sprintf(tmp2, "t%d", t_counter);
-        fprintf(ir, "\tint t%d = %d\n", t_counter++, exp2.literal);
-    }
-    else if (exp2.exp_type == EXP_TYPE_VAR || exp2.exp_type == EXP_TYPE_TVALUE)
+    else if(exp1.exp_type == EXP_TYPE_FUNC)
     {
-        sprintf(tmp2, "t%d", t_counter);
-        fprintf(ir, "\tint t%d = %s\n", t_counter++, exp2.var);
+        exp1 = evalFunc(line, col, exp1);
+    }
+
+    if (exp2.exp_type == EXP_TYPE_ARR)
+    {
+        exp2 = evalArray(line, col, exp2);
+    }
+    else if(exp2.exp_type == EXP_TYPE_FUNC)
+    {
+        exp2 = evalFunc(line, col, exp2);
     }
 
 
-    //temp char for output and return parameter
+    fprintf(ir, "\tint t%d = ", t_counter);
+
+    if(exp1.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d %s ", exp1.literal, operand);
+    }
+    else
+    {
+        fprintf(ir, "%s %s ", exp1.var, operand);
+    }
+
+    if(exp2.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "%d;\n", exp2.literal);
+    }
+    else
+    {
+        fprintf(ir, "%s;\n", exp2.var);
+    }
+
     char *tmp = malloc( sizeof(char) * (3 + 1 ) );
     sprintf(tmp, "t%d", t_counter++);
 
-    fprintf(ir, "\tint %s = %s %c %s;\n", tmp, tmp1, operand, tmp2);
+    return (expression_t) {EXP_TYPE_TVALUE, NULL, tmp, NULL, NULL};
 
-    return tmp;
 }
 
 
@@ -358,6 +367,16 @@ expression_t relOp(int line, int col, expression_t exp1, expression_t exp2, char
     if(exp2.exp_type == EXP_TYPE_ARR)
     {
         exp2 = evalArray(line, col, exp2);
+    }
+
+    if(exp1.exp_type == EXP_TYPE_FUNC)
+    {
+        exp1 = evalFunc(line, col, exp1);
+    }
+
+    if(exp2.exp_type == EXP_TYPE_FUNC)
+    {
+        exp2 = evalFunc(line, col, exp2);
     }
 
     fprintf(ir, "\tIF (");
@@ -380,9 +399,9 @@ expression_t relOp(int line, int col, expression_t exp1, expression_t exp2, char
         fprintf(ir, "%s", exp2.var);
     }
 
-    fprintf(ir, "\t) GOTO l%d\n", l_counter++);
+    fprintf(ir, "\t) GOTO l%d;\n", l_counter++);
     fprintf(ir, "\tint t%d = 0;\n", t_counter);
-    fprintf(ir, "\tGOTO l%d\n", l_counter++);
+    fprintf(ir, "\tGOTO l%d;\n", l_counter++);
     fprintf(ir, "l%d:\n", l_counter-2);
     fprintf(ir, "\tint t%d = 1;\n", t_counter);
     fprintf(ir, "l%d:\n", l_counter-1);
@@ -412,6 +431,66 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
 }
 
 
+
+void eval(int line, int col, expression_t exp)
+{
+    if(exp.exp_type == EXP_TYPE_ARR)
+    {
+        if(exp.exp->exp_type == EXP_TYPE_LITERAL)
+        {
+            fprintf(ir, "\t%s[%d];\n", exp.var, exp.exp->literal);
+        }
+        else
+        {
+            fprintf(ir, "\t%s[%s];\n", exp.var, exp.exp->var);
+        }
+    }
+   /* else if(exp.exp_type == EXP_TYPE_LITERAL)
+    {
+        fprintf(ir, "\t%d;\n", exp.literal);
+    }
+    else if(exp.exp_type == EXP_TYPE_VAR)
+    {
+        fprintf(ir, "\t%s;\n", exp.var);
+    }*/
+    else if(exp.exp_type == EXP_TYPE_FUNC)
+    {
+        fprintf(ir, "\tCALL %s", exp.var);
+
+        if(exp.paramList != NULL)
+        {
+            fprintf(ir, ", (");
+
+            while(exp.paramList->prev != NULL)
+            {
+                exp.paramList = exp.paramList->prev;
+            }
+
+            while(exp.paramList != NULL)
+            {
+                if(exp.paramList->exp.exp_type == EXP_TYPE_LITERAL)
+                {
+                    fprintf(ir, "%d,", exp.paramList->exp.literal);
+                }
+                else
+                {
+                    fprintf(ir, "%s,", exp.paramList->exp.var);
+                }
+
+                exp.paramList = exp.paramList->next;
+            }
+
+            fprintf(ir, ");\n");
+        }
+        else
+        {
+            fprintf(ir, ";\n");
+        }
+    }
+
+}
+
+
 expression_t evalArray(int line, int col, expression_t exp)
 {
 
@@ -436,11 +515,11 @@ expression_t evalArray(int line, int col, expression_t exp)
 expression_t evalFunc(int line, int col, expression_t exp)
 {
 
-    fprintf(ir, "\tint t%d = CALL %s,", t_counter, exp.var);
+    fprintf(ir, "\tint t%d = CALL %s", t_counter, exp.var);
 
     if(exp.paramList != NULL)
     {
-        fprintf(ir, " (");
+        fprintf(ir, ", (");
 
         while(exp.paramList->prev != NULL)
         {
@@ -463,6 +542,10 @@ expression_t evalFunc(int line, int col, expression_t exp)
 
         fprintf(ir, ");\n");
     }
+    else
+    {
+        fprintf(ir, ";\n");
+    }
 
     char *tmp = malloc( sizeof(char) * (3 + 1 ) );
     sprintf(tmp, "t%d", t_counter++);
@@ -473,14 +556,16 @@ expression_t evalFunc(int line, int col, expression_t exp)
 
 int ifStart(int line, int col, expression_t exp)
 {
+    if(checkForInt(line, col, exp));
+
 
     if(exp.exp_type == EXP_TYPE_LITERAL)
     {
-        fprintf(ir, "\tIF (%d == 0) GOTO l%d\n",exp.literal, l_counter++);
+        fprintf(ir, "\tIF (%d == 0) GOTO l%d;\n",exp.literal, l_counter++);
     }
     else
     {
-        fprintf(ir, "\tIF (%s == 0) GOTO l%d\n",exp.var, l_counter++);
+        fprintf(ir, "\tIF (%s == 0) GOTO l%d;\n",exp.var, l_counter++);
     }
 
 

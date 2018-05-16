@@ -3,6 +3,6 @@ int func (int arr[10]) {
 }
 
 int main () {
-  int i;
-  return func(i);
+  int a[9];
+  return func(a);
 }

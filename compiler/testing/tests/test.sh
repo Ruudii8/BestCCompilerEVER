@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Script to automate running all test (success/fail) scripts
+DIR="$(dirname ${BASH_SOURCE[0]})"
 
 CC=../../bin/dhbwcc
 CFLAGS=-p
 
-: ${SUCCESS_TEST_DIR:=./success}
-: ${FAIL_TEST_DIR:=./fail}
+: ${SUCCESS_TEST_DIR:=$DIR/success}
+: ${FAIL_TEST_DIR:=$DIR/fail}
 
 SUCCESS_TESTS=`find "$SUCCESS_TEST_DIR" -type f -name '*.c' | sort`
 FAIL_TESTS=`find "$FAIL_TEST_DIR" -type f -name '*.c' | sort`
@@ -42,6 +43,8 @@ do
 		echo "ERROR: Stopped testing as compiler crashed on success test"
 		exit 1
 	fi
+
+	read -p "Press enter to continue"
 done
 
 # Run fail tests
@@ -75,4 +78,6 @@ do
 		echo "ERROR: Stopped testing as compiler did not fail on fail test"
 		exit 1
 	fi
+
+	read -p "Press enter to continue"
 done

@@ -4,6 +4,12 @@
 
 %{
 	#include "parser.y.h"
+
+	int yycolumn = 1;
+	int lastLine = 1;
+
+	#define YY_USER_ACTION yylloc.first_line = yylineno; if(lastLine<yylineno) {yycolumn = 0; lastLine = yylineno;} yylloc.first_column = yycolumn; yycolumn += yyleng;
+
 %}
 
 /* 
@@ -60,5 +66,7 @@ return {return RETURN;}
 \/ {return DIV;}
 % {return MOD;}
 ! {return LOGICAL_NOT;}
+
+\n { }
 
 %%

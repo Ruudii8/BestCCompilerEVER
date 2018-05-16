@@ -322,7 +322,8 @@ void checkFuncCallParams(int line, int col, expression_t exp)
             if(param->type == TYPE_INTARRAY)
             {
                
-                if(param->size == checkForArray(line, col, paramList->exp))
+                int arr_size = checkForArray(line, col, paramList->exp);
+                if(arr_size == 0 || arr_size == param->size)
                 {
                     return;
                 }

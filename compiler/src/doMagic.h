@@ -30,7 +30,7 @@ expression_t unaryMinus(int line, int col, expression_t exp);
 expression_t unaryPlus(int line, int col, expression_t exp);
 
 
-void eval(int line, int col, expression_t exp);
+void checkIfFuncCall(int line, int col, expression_t exp);
 expression_t evalArray(int line, int col, expression_t exp);
 expression_t evalFunc(int line, int col, expression_t exp);
 

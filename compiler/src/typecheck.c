@@ -170,7 +170,7 @@ int checkForArray(int line, int col, expression_t exp)
         {
             if(variable->type == TYPE_INTARRAY)
             {
-                return 1;
+                return variable->size;
             }
         }
 
@@ -184,7 +184,7 @@ int checkForArray(int line, int col, expression_t exp)
         {
             if(variable->type == TYPE_INTARRAY)
             {
-                return 1;
+                return variable->size;
             }
         }
 
@@ -322,9 +322,13 @@ void checkFuncCallParams(int line, int col, expression_t exp)
             if(param->type == TYPE_INTARRAY)
             {
                
-                if(!checkForArray(line, col, paramList->exp))
+                if(param->size == checkForArray(line, col, paramList->exp))
                 {
                     return;
+                }
+                else
+                {
+                    log.error(line, col, "Array size does not match function definition");
                 }
             }
 

@@ -160,7 +160,7 @@ stmt_list
 stmt
      : stmt_block
      | variable_declaration SEMICOLON
-     | expression SEMICOLON {eval(@1.first_line, @1.first_column, $1);}
+     | expression SEMICOLON {checkIfFuncCall(@1.first_line, @1.first_column, $1);}
      | stmt_conditional
      | stmt_loop
      | RETURN expression SEMICOLON {returnInt(@1.first_line, @1.first_column, $2);}

@@ -25,8 +25,6 @@ expression_t assign(int line, int col, expression_t exp1, expression_t exp2)
         }
         fprintf(ir, "\tint %s = %s;\n", exp1.var, exp2.var);
     }
-
-    //TODO return type? or change eval function?
     
     return exp2;
 }
@@ -432,28 +430,9 @@ funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *para
 
 
 
-void eval(int line, int col, expression_t exp)
+void checkIfFuncCall(int line, int col, expression_t exp)
 {
-    if(exp.exp_type == EXP_TYPE_ARR)
-    {
-        if(exp.exp->exp_type == EXP_TYPE_LITERAL)
-        {
-            fprintf(ir, "\t%s[%d];\n", exp.var, exp.exp->literal);
-        }
-        else
-        {
-            fprintf(ir, "\t%s[%s];\n", exp.var, exp.exp->var);
-        }
-    }
-   /* else if(exp.exp_type == EXP_TYPE_LITERAL)
-    {
-        fprintf(ir, "\t%d;\n", exp.literal);
-    }
-    else if(exp.exp_type == EXP_TYPE_VAR)
-    {
-        fprintf(ir, "\t%s;\n", exp.var);
-    }*/
-    else if(exp.exp_type == EXP_TYPE_FUNC)
+    if(exp.exp_type == EXP_TYPE_FUNC)
     {
         fprintf(ir, "\tCALL %s", exp.var);
 

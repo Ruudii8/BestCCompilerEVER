@@ -35,16 +35,9 @@ expression_t evalArray(int line, int col, expression_t exp);
 expression_t evalFunc(int line, int col, expression_t exp);
 
 
-expression_t twoExpHandler(int line, int col, expression_t exp1, expression_t exp2, char* operand);
-char * oneExpHandler(expression_t exp1, char operand);
+expression_t arithmOp(int line, int col, expression_t exp1, expression_t exp2, char* operand);
 expression_t relOp(int line, int col, expression_t exp1, expression_t exp2, char* operand);
-//void evalIf();
-//void evalElse();
-//void while
-//call function
-//define function
-//declare function
-//return
+
 
 funcCallParamList_t* addExprAsParam(int line, int col, funcCallParamList_t *paramList, expression_t exp);
 

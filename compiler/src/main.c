@@ -269,6 +269,11 @@ int main (int argc, char *argv[]) {
   printf("IR: %s\n", cc_options.ir_file);
 
 
+  if(cc_options.ir_file == NULL)
+  {
+    cc_options.ir_file = "tmp";
+  }
+
   FILE *f = fopen(cc_options.input_file, "r");
 
   ir = fopen(cc_options.ir_file, "w");
@@ -288,10 +293,14 @@ int main (int argc, char *argv[]) {
 
   fclose(ir);
 
+  if(log.errorCount>0 || cc_options.ir_file == "tmp")
+  {
+    remove(cc_options.ir_file);
+  }
+
   if(log.errorCount>0)
   {
     printf("failed");
-    remove(cc_options.ir_file);
     return 1;
   }
   else
